@@ -1,0 +1,68 @@
+menuconfig PLAT_RASPI
+       bool "Raspberry Pi 3B+"
+       default n
+       depends on ARCH_ARM_64
+       #select LIBUKDEBUG
+       #select LIBUKALLOC
+       #select LIBUKTIMECONV
+       #select LIBNOLIBC if !HAVE_LIBC
+       #select LIBFDT
+       help
+                Create a Unikraft image that runs as a Raspberry Pi 3B+
+
+if (PLAT_RASPI)
+
+menu "Console Options"
+config RASPI_KERNEL_SERIAL_CONSOLE
+        bool "Serial console for the kernel prints"
+        default n
+        depends on ARCH_ARM_64
+        help
+          Choose serial console for the kernel printing
+
+config RASPI_KERNEL_HDMI_CONSOLE
+        bool "HDMI console for the kernel prints"
+        default n
+        depends on ARCH_ARM_64
+        help
+          Choose HDMI console for the kernel printing
+
+config RASPI_DEBUG_SERIAL_CONSOLE
+        bool "Serial console for the debug prints"
+        default n
+        depends on ARCH_ARM_64
+        help
+          Choose serial console for the debug printing
+
+config RASPI_DEBUG_HDMI_CONSOLE
+        bool "HDMI console for the debug prints"
+        default n
+        depends on ARCH_ARM_64
+        help
+          Choose HDMI console for the debug printing
+endmenu
+
+menu "Raspberry Pi3 B+ Devices"
+config RASPI_LCD
+       bool "DSI LCD screen"
+       default n
+       depends on ARCH_ARM_64
+
+config RASPI_HDMI
+       bool "HDMI port"
+       default n
+       depends on ARCH_ARM_64
+endmenu
+
+config LIBGICV2
+       bool "Arm GIC (generic interrupt controller) v2 library support"
+       default n
+       select LIBOFW
+       depends on ARCH_ARM_64
+
+config LIBOFW
+       bool "Open Firmware library support"
+       default n
+       select LIBFDT
+
+endif

@@ -1,0 +1,57 @@
+RASPI_LDFLAGS-y	 += -Wl,-m,aarch64elf
+
+
+##
+## Link image
+##
+RASPI_IMAGE := $(BUILD_DIR)/$(CONFIG_UK_NAME)_raspi-$(CONFIG_UK_ARCH)
+RASPI_ELF_IMAGE := $(RASPI_IMAGE).elf
+
+RASPI_LD_SCRIPT_FLAGS := $(addprefix -Wl$(comma)-dT$(comma),\
+			 $(UK_PLAT_RASPI_DEF_LDS))
+RASPI_LD_SCRIPT_FLAGS += $(addprefix -Wl$(comma)-T$(comma),\
+			$(LIBRASPIPLAT_DEF_LDS) $(EXTRA_LD_SCRIPT-y))
+
+$(RASPI_ELF_IMAGE): $(RASPI_ALIBS) $(RASPI_ALIBS-y) $(RASPI_OLIBS) $(RASPI_OLIBS-y) \
+		    $(UK_ALIBS) $(UK_ALIBS-y) $(UK_OLIBS) $(UK_OLIBS-y)
+	$(call build_cmd,LD,,$(RASPI_IMAGE).ld.o,\
+	       $(LD) -r $(LIBLDFLAGS) $(LIBLDFLAGS-y) \
+			$(RASPI_LDFLAGS) $(RASPI_LDFLAGS-y) \
+			$(RASPI_OLIBS) $(RASPI_OLIBS-y) \
+			$(UK_OLIBS) $(UK_OLIBS-y) \
+			-Wl$(comma)--start-group \
+			$(RASPI_ALIBS) $(RASPI_ALIBS-y) \
+			$(UK_ALIBS) $(UK_ALIBS-y) \
+			-Wl$(comma)--end-group \
+			-o $(RASPI_IMAGE).ld.o)
+	$(call build_cmd,OBJCOPY,,$(RASPI_IMAGE).o,\
+		$(OBJCOPY) -w -G _libraspiplat_entry \
+			$(RASPI_IMAGE).ld.o $(RASPI_IMAGE).o)
+	$(call build_cmd,LD,,$@,\
+	       $(LD) $(LDFLAGS) $(LDFLAGS-y) \
+		     $(RASPI_LDFLAGS) $(RASPI_LDFLAGS-y) \
+		     $(RASPI_LD_SCRIPT_FLAGS) \
+		     $(RASPI_IMAGE).o -o $@)
+
+$(RASPI_IMAGE): $(RASPI_IMAGE).elf
+	$(call build_cmd,SCSTRIP,,$@,\
+		$(SCRIPTS_DIR)/sect-strip.py \
+			$(SECT_STRIP_FLAGS) $(SECT_STRIP_FLAGS-y) \
+			--with-objcopy=$(OBJCOPY) \
+			$< -o $@ && \
+		$(STRIP) -s $@)
+	aarch64-elf-objcopy -O binary $(RASPI_ELF_IMAGE) $(BUILD_DIR)/kernel8.img.back
+	$(call build_cmd,OBJCOPY,,$(RASPI_IMAGE).img,\
+		$(OBJCOPY) -O binary $(RASPI_ELF_IMAGE) $(BUILD_DIR)/kernel8.img)
+
+# register images to the build
+ifeq ($(CONFIG_PLAT_RASPI),y)
+UK_DEBUG_IMAGES-y                     += $(RASPI_ELF_IMAGE)
+UK_IMAGES-y                           += $(RASPI_IMAGE)
+endif
+
+# ...for cleaning:
+LIBRASPIPLAT_CLEAN += $(call build_clean,$(RASPI_IMAGE).o)
+LIBRASPIPLAT_CLEAN += $(call build_clean,$(RASPI_IMAGE).ld.o)
+LIBRASPIPLAT_CLEAN += $(call build_clean,$(RASPI_IMAGE).elf)
+LIBRASPIPLAT_CLEAN += $(call build_clean,$(RASPI_IMAGE).img)
