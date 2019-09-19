@@ -35,7 +35,9 @@ UK_PLAT_RASPI_DEF_LDS            := $(LIBRASPIPLAT_BASE)/link.lds.S
 ## Architecture library definitions
 ##
 ifeq ($(findstring y,$(CONFIG_RASPI_KERNEL_SERIAL_CONSOLE) $(CONFIG_RASPI_DEBUG_SERIAL_CONSOLE)),y)
-LIBRASPIPLAT_SRCS-$(CONFIG_ARCH_ARM_64) += $(UK_PLAT_COMMON_BASE)/arm/pl011.c|common
+## TODO: Check if both implementations are actually doing the same thing
+#LIBRASPIPLAT_SRCS-$(CONFIG_ARCH_ARM_64) += $(UK_PLAT_COMMON_BASE)/arm/pl011.c|common
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/serial_console.c
 endif
 LIBRASPIPLAT_SRCS-$(CONFIG_ARCH_ARM_64) += $(UK_PLAT_COMMON_BASE)/arm/cpu_native.c|common
 #LIBRASPIPLAT_SRCS-$(CONFIG_ARCH_ARM_64) += $(UK_PLAT_COMMON_BASE)/arm/cache64.S|common
@@ -54,7 +56,6 @@ LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/mbox.c
 LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/memory.c
 LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/setup.c
 LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/shutdown.c
-LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/uart.c
 LIBRASPIPLAT_SRCS-y				+= $(UK_PLAT_COMMON_BASE)/lcpu.c|common
 LIBRASPIPLAT_SRCS-y				+= $(UK_PLAT_COMMON_BASE)/memory.c|common
 LIBRASPIPLAT_SRCS-y				+= $(UK_PLAT_RASPI_DEF_LDS)

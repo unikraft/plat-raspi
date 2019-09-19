@@ -23,9 +23,9 @@
  *
  */
 
-#include "gpio.h"
-#include "mbox.h"
-#include "delays.h"
+#include <raspi/gpio.h>
+#include <raspi/mbox.h>
+#include <raspi/delays.h>
 
 /* PL011 UART registers */
 #define UART0_DR        ((volatile unsigned int*)(MMIO_BASE+0x00201000))
@@ -40,7 +40,7 @@
 /**
  * Set baud rate and characteristics (115200 8N1) and map to GPIO
  */
-void uart_init()
+void _libraspiplat_init_serial_console()
 {
     register unsigned int r;
 
@@ -80,49 +80,29 @@ void uart_init()
 /**
  * Send a character
  */
-void uart_send(unsigned int c) {
+void _libraspiplat_serial_putc(char c) {
     /* wait until we can send */
-    do{asm volatile("nop");}while(*UART0_FR&0x20);
+    do{
+		asm volatile("nop");
+	} while (*UART0_FR&0x20);
+
     /* write the character to the buffer */
-    *UART0_DR=c;
+    *UART0_DR = c;
+}
+
+static int serial_rx_buffer_empty(void)
+{
+	return *UART0_FR&0x10;
 }
 
 /**
  * Receive a character
  */
-char uart_getc() {
+int  _libraspiplat_serial_getc(void) {
+	if (serial_rx_buffer_empty())
+		return -1;
+
     char r;
-    /* wait until something is in the buffer */
-    do{asm volatile("nop");}while(*UART0_FR&0x10);
-    /* read it and return */
-    r=(char)(*UART0_DR);
-    /* convert carrige return to newline */
-    return r=='\r'?'\n':r;
-}
-
-/**
- * Display a string
- */
-void uart_puts(char *s) {
-    while(*s) {
-        /* convert newline to carrige return + newline */
-        if(*s=='\n')
-            uart_send('\r');
-        uart_send(*s++);
-    }
-}
-
-/**
- * Display a binary value in hexadecimal
- */
-void uart_hex(unsigned int d) {
-    unsigned int n;
-    int c;
-    for(c=28;c>=0;c-=4) {
-        // get highest tetrad
-        n=(d>>c)&0xF;
-        // 0-9 => '0'-'9', 10-15 => 'A'-'F'
-        n+=n>9?0x37:0x30;
-        uart_send(n);
-    }
+    r = (char)(*UART0_DR);
+    return (int)r;
 }

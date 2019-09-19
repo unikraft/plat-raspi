@@ -23,9 +23,9 @@
  *
  */
 
-#include "uart.h"
-#include "mbox.h"
-#include "pixmaps.h"
+#include <uk/print.h>
+#include <raspi/mbox.h>
+#include <raspi/pixmaps.h>
 
 #define SCREEN_WIDTH	800
 #define SCREEN_HEIGHT	480
@@ -90,7 +90,7 @@ void lfb_init()
         pitch=mbox[33];
         lfb=(void*)((unsigned long)mbox[28]);
     } else {
-        uart_puts("Unable to set screen resolution to 800x480x32\n");
+        uk_pr_err("Unable to set screen resolution to 800x480x32\n");
     }
 
 

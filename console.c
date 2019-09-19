@@ -29,10 +29,10 @@
 #include <uk/config.h>
 #include <uk/essentials.h>
 #if (CONFIG_RASPI_DEBUG_HDMI_CONSOLE || CONFIG_RASPI_KERNEL_HDMI_CONSOLE)
-#include <raspi-x86/hdmi_console.h>
+#include <raspi/hdmi_console.h>
 #endif
 #if (CONFIG_RASPI_DEBUG_SERIAL_CONSOLE || CONFIG_RASPI_KERNEL_SERIAL_CONSOLE)
-#include <raspi-x86/serial_console.h>
+#include <raspi/serial_console.h>
 #endif
 
 void _libraspiplat_init_console(void)

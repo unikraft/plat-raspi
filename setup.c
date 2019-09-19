@@ -36,8 +36,8 @@
 #include <uk/plat/bootstrap.h>
 #include <uk/plat/time.h>
 #include <arm/cpu.h>
-#include "uart.h"
-#include "lfb.h"
+#include <raspi/lfb.h>
+#include <raspi/console.h>
 
 smcc_psci_callfn_t smcc_psci_call;
 
@@ -46,7 +46,7 @@ smcc_psci_callfn_t smcc_psci_call;
 void _libraspiplat_entry(int argc, char *argv[])
 {
     // Set up serial console and linear frame buffer
-    uart_init();
+    _libraspiplat_init_console();
     lfb_init();
 
 	/*

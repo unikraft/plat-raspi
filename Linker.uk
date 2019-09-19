@@ -40,7 +40,6 @@ $(RASPI_IMAGE): $(RASPI_IMAGE).elf
 			--with-objcopy=$(OBJCOPY) \
 			$< -o $@ && \
 		$(STRIP) -s $@)
-	aarch64-elf-objcopy -O binary $(RASPI_ELF_IMAGE) $(BUILD_DIR)/kernel8.img.back
 	$(call build_cmd,OBJCOPY,,$(RASPI_IMAGE).img,\
 		$(OBJCOPY) -O binary $(RASPI_ELF_IMAGE) $(BUILD_DIR)/kernel8.img)
 
@@ -55,3 +54,4 @@ LIBRASPIPLAT_CLEAN += $(call build_clean,$(RASPI_IMAGE).o)
 LIBRASPIPLAT_CLEAN += $(call build_clean,$(RASPI_IMAGE).ld.o)
 LIBRASPIPLAT_CLEAN += $(call build_clean,$(RASPI_IMAGE).elf)
 LIBRASPIPLAT_CLEAN += $(call build_clean,$(RASPI_IMAGE).img)
+LIBRASPIPLAT_CLEAN += $(call build_clean,$(BUILD_DIR)/kernel8.img)
