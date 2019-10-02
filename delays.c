@@ -23,50 +23,75 @@
  *
  */
 
+#include <raspi/delays.h>
 #include <raspi/gpio.h>
 
-#define SYSTMR_LO        ((volatile unsigned int*)(MMIO_BASE+0x00003004))
-#define SYSTMR_HI        ((volatile unsigned int*)(MMIO_BASE+0x00003008))
+#define SYSTMR_LO ((volatile __u32 *)(MMIO_BASE + 0x00003004))
+#define SYSTMR_HI ((volatile __u32 *)(MMIO_BASE + 0x00003008))
+
 
 /**
  * Wait N CPU cycles (ARM CPU only)
  */
 void wait_cycles(unsigned int n)
 {
-    if(n) while(n--) { asm volatile("nop"); }
+    if (n) {
+		while (n--) {
+			asm volatile("nop");
+		}
+	}
 }
+
 
 /**
  * Wait N microsec (ARM CPU only)
  */
-void wait_msec(unsigned int n)
-{
-    register unsigned long f, t, r;
-    // get the current counter frequency
-    asm volatile ("mrs %0, cntfrq_el0" : "=r"(f));
-    // read the current counter
-    asm volatile ("mrs %0, cntpct_el0" : "=r"(t));
-    // calculate expire value for counter
-    t+=((f/1000)*n)/1000;
-    do{asm volatile ("mrs %0, cntpct_el0" : "=r"(r));}while(r<t);
+void wait_usec(unsigned int n) {
+	register __u64 f, t, r;
+	// get the current counter frequency
+	asm volatile("mrs %0, cntfrq_el0" : "=r"(f));
+	// read the current counter
+	asm volatile("mrs %0, cntpct_el0" : "=r"(t));
+	// calculate expire value for counter
+	t += ((f / 1000) * n) / 1000;
+	do
+	{
+		asm volatile("mrs %0, cntpct_el0" : "=r"(r));
+	} while (r < t);
+}
+
+inline __u64 get_system_counter(void) {
+	register __u64 t;
+	asm volatile("mrs %0, cntpct_el0" : "=r"(t));
+	return t;
+}
+
+inline __u64 get_system_frequency(void) {
+	register __u64 f;
+	asm volatile("mrs %0, cntfrq_el0" : "=r"(f));
+	return f;
 }
 
 /**
  * Get System Timer's counter
  */
-unsigned long get_system_timer()
-{
-    unsigned int h=-1, l;
-    // we must read MMIO area as two separate 32 bit reads
-    h=*SYSTMR_HI;
-    l=*SYSTMR_LO;
-    // we have to repeat it if high word changed during read
-    if(h!=*SYSTMR_HI) {
-        h=*SYSTMR_HI;
-        l=*SYSTMR_LO;
-    }
-    // compose long int value
-    return ((unsigned long) h << 32) | l;
+__u64 get_system_timer(void) {
+	__u32 h, l;
+	// we must read MMIO area as two separate 32 bit reads
+	h = *SYSTMR_HI;
+	l = *SYSTMR_LO;
+	// we have to repeat it if high word changed during read
+	if (h != *SYSTMR_HI)
+	{
+		h = *SYSTMR_HI;
+		l = *SYSTMR_LO;
+	}
+	// compose long int value
+	return ((__u64)h << 32) | l;
+}
+
+__u32 get_system_timer_low(void) {
+	return *SYSTMR_LO;
 }
 
 /**
@@ -74,8 +99,10 @@ unsigned long get_system_timer()
  */
 void wait_msec_st(unsigned int n)
 {
-    unsigned long t=get_system_timer();
-    // we must check if it's non-zero, because qemu does not emulate
-    // system timer, and returning constant zero would mean infinite loop
-    if(t) while(get_system_timer() < t+n);
+	__u64 t = get_system_timer();
+	// we must check if it's non-zero, because qemu does not emulate
+	// system timer, and returning constant zero would mean infinite loop
+	if (t)
+		while (get_system_timer() < t + n)
+			;
 }

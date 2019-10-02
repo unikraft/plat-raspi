@@ -38,40 +38,44 @@
 #include <arm/cpu.h>
 #include <raspi/lfb.h>
 #include <raspi/console.h>
+#include <raspi/delays.h>
+#include <uk/print.h>
+#include <uk/arch/types.h>
 
 smcc_psci_callfn_t smcc_psci_call;
+//extern int main(int argc, char *argv[]);
 
 //void _libraspiplat_entry(int argc, char *argv[]) __noreturn;
 
-void _libraspiplat_entry(int argc, char *argv[])
+static __u64 assembly_entry;
+static __u64 hardware_init_done;
+
+__u64 _libraspiplat_get_reset_time(void) {
+	return assembly_entry;
+}
+
+__u64 _libraspiplat_get_hardware_init_time(void) {
+	return hardware_init_done;
+}
+
+void _libraspiplat_entry(__u64 low0, __u64 hi0, __u64 low1, __u64 hi1)
 {
+	if (hi0 == hi1) {
+		assembly_entry = ((hi0 << 32)&0xFFFFFFFF00000000) | (low0&0xFFFFFFFF);
+	} else {
+		assembly_entry = ((hi1 << 32)&0xFFFFFFFF00000000) | (low1&0xFFFFFFFF);
+	}
+
+
     // Set up serial console and linear frame buffer
     _libraspiplat_init_console();
     lfb_init();
 
+	hardware_init_done = get_system_timer();
+
 	/*
 	 * Enter Unikraft
 	 */
-	ukplat_entry(argc, argv);
-}
-
-/* TODO: Remove and use arm/time.c  version once working */
-void ukplat_time_init(void)
-{
-
-}
-
-__nsec ukplat_monotonic_clock(void)
-{
-	return 42;
-}
-
-void time_block_until(__snsec until)
-{
-	until = until;
-	return;
-}
-__nsec ukplat_wall_clock(void)
-{
-	return 43;
+	//main(0, 0);
+	ukplat_entry(0, 0);
 }

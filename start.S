@@ -23,12 +23,19 @@
  *
  */
 
+#include "raspi/sysregs.h"
+
 .section ".text.boot"
 
 .global _start
 
 _start:
     // read cpu id, stop slave cores
+	ldr		x0, =0x3F003000
+	ldr		w10, [x0, #4]
+	ldr		w11, [x0, #8]
+	ldr		w12, [x0, #4]
+	ldr		w13, [x0, #8]
     mrs     x1, mpidr_el1
     and     x1, x1, #3
     cbz     x1, master
@@ -39,6 +46,25 @@ hang:  wfe
 
 // Continue if cpu id == 0
 master:
+	//ldr	x0, =SCTLR_VALUE_MMU_DISABLED
+	//msr	sctlr_el1, x0		
+
+	ldr	x0, =HCR_VALUE
+	msr	hcr_el2, x0
+
+	//ldr	x0, =SCR_VALUE
+	//msr	scr_el3, x0
+
+	//ldr	x0, =SPSR_VALUE
+	//msr	spsr_el3, x0
+
+	adr		x0, el1_entry
+	msr		elr_el2, x0
+	mov		x30, x0
+
+	//eret
+
+el1_entry:
     // Set the stack before our code
     ldr     x1, =_start
     mov     sp, x1
@@ -53,9 +79,12 @@ clear_bss:
     cbnz    w2, clear_bss
 
 // Jump to C code, should not return
-jump_to_C: 
+jump_to_C:
+	mov		w0, w10
+	mov		w1, w11
+	mov		w2, w12
+	mov		w3, w13
 	bl      _libraspiplat_entry
-	//bl      main
 
 	// As a failsafe, we also hang the main core
     b       hang

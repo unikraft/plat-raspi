@@ -23,7 +23,12 @@
  *
  */
 
+#include <uk/arch/types.h>
+
 void wait_cycles(unsigned int n);
-void wait_msec(unsigned int n);
-unsigned long get_system_timer();
+void wait_usec(unsigned int n);
+__u64 get_system_counter(void);
+__u64 get_system_frequency(void);
+__u64 get_system_timer(void);
+__u32 get_system_timer_low(void);
 void wait_msec_st(unsigned int n);

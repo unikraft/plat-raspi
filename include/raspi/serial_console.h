@@ -26,4 +26,12 @@ void _libraspiplat_init_serial_console(void);
 void _libraspiplat_serial_putc(char a);
 int  _libraspiplat_serial_getc(void);
 
+unsigned int serial_tx_buffer_full(void);
+unsigned int serial_rx_buffer_empty(void);
+
+void serial_console_send_string(char *str);
+void serial_console_send_string_i(char *str, int value);
+void serial_console_send_string_u(char *str, unsigned int value);
+void serial_console_send_string_lu(char *str, unsigned long value);
+
 #endif /* __RASPI_SERIAL_CONSOLE__ */

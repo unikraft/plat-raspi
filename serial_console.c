@@ -37,6 +37,8 @@
 #define UART0_IMSC      ((volatile unsigned int*)(MMIO_BASE+0x00201038))
 #define UART0_ICR       ((volatile unsigned int*)(MMIO_BASE+0x00201044))
 
+static char prev_sent_char = '\0';
+
 /**
  * Set baud rate and characteristics (115200 8N1) and map to GPIO
  */
@@ -77,20 +79,29 @@ void _libraspiplat_init_serial_console()
     *UART0_CR = 0x301;     // enable Tx, Rx, FIFO
 }
 
+unsigned int serial_tx_buffer_full(void)
+{
+	return *UART0_FR&0x20;
+}
+
 /**
  * Send a character
  */
 void _libraspiplat_serial_putc(char c) {
+	if ((c == '\n') && (prev_sent_char != '\r'))
+		_libraspiplat_serial_putc('\r');
+
     /* wait until we can send */
     do{
 		asm volatile("nop");
-	} while (*UART0_FR&0x20);
+	} while (serial_tx_buffer_full());
 
     /* write the character to the buffer */
     *UART0_DR = c;
+	prev_sent_char = c;
 }
 
-static int serial_rx_buffer_empty(void)
+unsigned int serial_rx_buffer_empty(void)
 {
 	return *UART0_FR&0x10;
 }
@@ -105,4 +116,122 @@ int  _libraspiplat_serial_getc(void) {
     char r;
     r = (char)(*UART0_DR);
     return (int)r;
+}
+
+void serial_console_send_string(char *str) {
+	while(*str) {
+        _libraspiplat_serial_putc(*str++);
+    }
+
+	do{
+		asm volatile("nop");
+	} while (serial_tx_buffer_full());
+}
+
+void serial_console_send_string_i(char *str, int value) {
+	while(*str) {
+		if (*str == '%') {
+			str++;
+			if (*str == 'd') {
+				str++;
+				int lenght = 1;
+				int divisor = 1;
+				int valueCopy = value;
+				valueCopy /= 10;
+				while (valueCopy > 0) {
+					valueCopy /= 10;
+					divisor *= 10;
+					lenght++;
+				}
+
+				_libraspiplat_serial_putc('0' + value / divisor);
+				while (divisor > 1) {
+					value %= divisor;
+					divisor /= 10;
+					_libraspiplat_serial_putc('0' + value / divisor);
+				}
+			} else {
+				str--;
+			}
+		}
+        _libraspiplat_serial_putc(*str++);
+    }
+
+	do{
+		asm volatile("nop");
+	} while (serial_tx_buffer_full());
+}
+
+void serial_console_send_string_u(char *str, unsigned int value) {
+	while(*str) {
+		if (*str == '%') {
+			str++;
+			if (*str == 'u') {
+				str++;
+				unsigned int  lenght = 1;
+				unsigned int divisor = 1;
+				unsigned int valueCopy = value;
+				valueCopy /= 10;
+				while (valueCopy > 0) {
+					valueCopy /= 10;
+					divisor *= 10;
+					lenght++;
+				}
+
+				_libraspiplat_serial_putc('0' + value / divisor);
+				while (divisor > 1) {
+					value %= divisor;
+					divisor /= 10;
+					_libraspiplat_serial_putc('0' + value / divisor);
+				}
+			} else {
+				str--;
+			}
+		}
+        _libraspiplat_serial_putc(*str++);
+    }
+
+	do{
+		asm volatile("nop");
+	} while (serial_tx_buffer_full());
+}
+
+void serial_console_send_string_lu(char *str, unsigned long value) {
+	while(*str) {
+		if (*str == '%') {
+			str++;
+			if (*str == 'l') {
+				str++;
+				if (*str == 'u') {
+					str++;
+					unsigned long lenght = 1;
+					unsigned long divisor = 1;
+					unsigned long valueCopy = value;
+					valueCopy /= 10;
+					while (valueCopy > 0) {
+						valueCopy /= 10;
+						divisor *= 10;
+						lenght++;
+					}
+
+					_libraspiplat_serial_putc('0' + value / divisor);
+					while (divisor > 1) {
+						value %= divisor;
+						divisor /= 10;
+						_libraspiplat_serial_putc('0' + value / divisor);
+					}
+				} else {
+					str--;
+					str--;
+				}
+			} else {
+				str--;
+			}
+		}
+        _libraspiplat_serial_putc(*str++);
+    }
+
+	do{
+		asm volatile("nop");
+	} while (serial_tx_buffer_full());
 }
