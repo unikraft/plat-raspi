@@ -3,8 +3,6 @@
 	.macro handle_invalid_entry type
 	kernel_entry
 	mov	x0, #\type
-	mrs	x1, esr_el1
-	mrs	x2, elr_el1
 	bl	show_invalid_entry_message
 	b	err_hang
 	.endm
@@ -114,7 +112,7 @@ vectors_el1:
 	ventry	error_invalid_el1t			// Error EL1t
 
 	ventry	sync_invalid_el1h			// Synchronous EL1h
-	ventry	irq_invalid_el1h			// IRQ EL1h
+	ventry	el1_irq						// IRQ EL1h
 	ventry	fiq_invalid_el1h			// FIQ EL1h
 	ventry	error_invalid_el1h			// Error EL1h
 
@@ -344,6 +342,11 @@ error_invalid_eln_32:
 	handle_invalid_entry  ERROR_INVALID_ELN_32
 
 el2_irq:
+	kernel_entry 
+	bl	handle_irq
+	kernel_exit
+
+el1_irq:
 	kernel_entry 
 	bl	handle_irq
 	kernel_exit

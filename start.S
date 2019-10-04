@@ -46,28 +46,34 @@ hang:  wfe
 
 // Continue if cpu id == 0
 master:
-	//ldr	x0, =SCTLR_VALUE_MMU_DISABLED
-	//msr	sctlr_el1, x0		
+	ldr	x0, =SCTLR_EL1_VALUE
+	msr	sctlr_el1, x0
 
-	ldr	x0, =HCR_VALUE
+	ldr	x0, =SCTLR_EL2_VALUE
+	msr	sctlr_el2, x0
+
+	ldr	x0, =HCR_EL2_VALUE
 	msr	hcr_el2, x0
 
 	//ldr	x0, =SCR_VALUE
 	//msr	scr_el3, x0
 
-	//ldr	x0, =SPSR_VALUE
-	//msr	spsr_el3, x0
+	// Set the SPSR state to restore when returning from EL2 to EL1
+	ldr	x0, =SPSR_EL2_VALUE
+	msr	spsr_el2, x0
+	//msr	spsr_hyp, x0
 
 	adr		x0, el1_entry
 	msr		elr_el2, x0
-	mov		x30, x0
+	//msr		elr_hyp, x0
 
-	//eret
+	eret
 
 el1_entry:
     // Set the stack before our code
+	msr		SPSel, #1
     ldr     x1, =_start
-    mov     sp, x1
+	mov		sp, x1
 
     // Clear bss
     ldr     x1, =__bss_start

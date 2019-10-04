@@ -28,6 +28,7 @@ void irq_vector_init( void );
 void enable_irq( void );
 void disable_irq( void );
 int get_el ( void );
+int get_spsel ( void );
 
 void handle_timer_irq(void);
 

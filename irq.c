@@ -110,9 +110,10 @@ void enable_interrupt_controller(void)
 	*ENABLE_IRQS_1 = SYSTEM_TIMER_IRQ_1;
 }
 
-void show_invalid_entry_message(int type, unsigned long esr, unsigned long address)
+void show_invalid_entry_message(int type)
 {
-	uk_pr_debug("%s, ESR: %lu, address: %lu\n", entry_error_messages[type], esr, address);
+	uk_pr_debug("IRQ: %d\n", type);
+	uk_pr_debug("%s\n", entry_error_messages[type]);
 }
 
 void handle_irq(void)

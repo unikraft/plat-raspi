@@ -328,12 +328,10 @@ void ukplat_time_init(void)
 
 
 
-	/*irq_vector_init();
-	uk_pr_debug("Initial CLO value: %u\n", (__u32)*TIMER_CLO);
+	irq_vector_init();
 	generic_timer_setup_next_interrupt(1000000);
-	uk_pr_debug("Compaer C1 value:  %u\n", (__u32)*TIMER_C1);
 	enable_interrupt_controller();
-	enable_irq();*/
+	enable_irq();
 }
 
 
