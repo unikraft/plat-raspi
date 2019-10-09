@@ -135,7 +135,7 @@ vectors_el0:
 	ventry	error_invalid_el0t			// Error EL1t
 
 	ventry	sync_invalid_el0h			// Synchronous EL1h
-	ventry	irq_invalid_el0h			// IRQ EL1h
+	ventry	el0_irq						// IRQ EL1h
 	ventry	fiq_invalid_el0h			// FIQ EL1h
 	ventry	error_invalid_el0h			// Error EL1h
 
@@ -347,6 +347,11 @@ el2_irq:
 	kernel_exit
 
 el1_irq:
+	kernel_entry 
+	bl	handle_irq
+	kernel_exit
+
+el0_irq:
 	kernel_entry 
 	bl	handle_irq
 	kernel_exit

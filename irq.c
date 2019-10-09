@@ -118,12 +118,14 @@ void show_invalid_entry_message(int type)
 
 void handle_irq(void)
 {
-	unsigned int irq = *IRQ_PENDING_1;
-	switch (irq) {
+	handle_timer_irq();
+	return;
+
+	/*switch (irq) {
 		case (SYSTEM_TIMER_IRQ_1):
 			handle_timer_irq();
 			break;
 		default:
 			uk_pr_debug("Unknown pending irq: %u\n", irq);
-	}
+	}*/
 }

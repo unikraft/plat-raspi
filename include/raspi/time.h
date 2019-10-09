@@ -16,6 +16,6 @@
 #define TIMER_CS_M3	(1 << 3)
 
 void handle_timer_irq(void);
-void generic_timer_setup_next_interrupt(unsigned int delta);
+void generic_timer_setup_next_interrupt(__u64 delta);
 
 #endif /* __RASPI_TIME_H__ */

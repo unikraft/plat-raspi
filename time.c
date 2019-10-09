@@ -36,6 +36,7 @@
 #include <uk/plat/time.h>
 #include <uk/plat/lcpu.h>
 #include <uk/plat/irq.h>
+#include <arm/time.h>
 #include <cpu.h>
 #include <irq.h>
 
@@ -48,85 +49,17 @@ typedef __u32 uint32_t;
 #include <uk/print.h>
 
 
-/* Bits definition of cntv_ctl_el0 register */
-#define GT_TIMER_ENABLE        0x01
-#define GT_TIMER_MASK_IRQ      0x02
-#define GT_TIMER_IRQ_STATUS    0x04
-
-#define  cntv_ctl_get()  SYSREG_READ32(cntv_ctl_el0)
-#define  cntv_ctl_set(val) SYSREG_WRITE32(cntv_ctl_el0, val)
-
-static inline void generic_timer_enable(void)
+#define PI3_TIMER_CTL_REG	((volatile __u32 *)(0x40000000+0))
+static inline void generic_timer_clear_irq(void)
 {
-	cntv_ctl_set(cntv_ctl_get() | GT_TIMER_ENABLE);
+	cntv_ctl_set(cntv_ctl_get() & (~GT_TIMER_IRQ_STATUS));
 
 	/* Ensure the write of sys register is visible */
 	isb();
 }
 
-static inline void generic_timer_disable(void)
-{
-	cntv_ctl_set(cntv_ctl_get() & (~GT_TIMER_ENABLE));
 
-	/* Ensure the write of sys register is visible */
-	isb();
-}
-
-static inline void generic_timer_mask_irq(void)
-{
-	cntv_ctl_set(cntv_ctl_get() | GT_TIMER_MASK_IRQ);
-
-	/* Ensure the write of sys register is visible */
-	isb();
-}
-
-static inline void generic_timer_unmask_irq(void)
-{
-	cntv_ctl_set(cntv_ctl_get() & (~GT_TIMER_MASK_IRQ));
-
-	/* Ensure the write of sys register is visible */
-	isb();
-}
-
-static inline void generic_timer_update_compare(uint64_t new_val)
-{
-	SYSREG_WRITE64(cntv_cval_el0, new_val);
-
-	/* Ensure the write of sys register is visible */
-	isb();
-}
-
-static inline uint32_t read_freq_from_sysreg(void)
-{
-	return SYSREG_READ32(cntfrq_el0);
-}
-
-#ifdef CONFIG_ARM64_ERRATUM_858921
-/*
- * The errata #858921 describes that Cortex-A73 (r0p0 - r0p2) counter
- * read can return a wrong value when the counter crosses a 32bit boundary.
- * But newer Cortex-A73 are not affected.
- *
- * The workaround involves performing the read twice, compare bit[32] of
- * the two read values. If bit[32] is different, keep the first value,
- * otherwise keep the second value.
- */
-static uint64_t generic_timer_get_ticks(void)
-{
-	uint64_t val_1st, val_2nd;
-
-	val_1st = SYSREG_READ64(cntvct_el0);
-	val_2nd = SYSREG_READ64(cntvct_el0);
-	return (((val_1st ^ val_2nd) >> 32) & 1) ? val_1st : val_2nd;
-}
-#else
-static inline uint64_t generic_timer_get_ticks(void)
-{
-	return SYSREG_READ64(cntvct_el0);
-}
-#endif
-
-//static uint32_t counter_freq;
+static uint32_t counter_freq;
 
 
 /* Shift factor for converting ticks to ns */
@@ -150,7 +83,7 @@ static uint32_t tick_per_ns;
  */
 #define __MAX_CONVERT_SECS	(3600UL)
 #define __MAX_CONVERT_NS	(3600UL*NSEC_PER_SEC)
-//static uint64_t max_convert_ticks;
+static uint64_t max_convert_ticks;
 
 /* How many nanoseconds per second */
 #define NSEC_PER_SEC ukarch_time_sec_to_nsec(1)
@@ -159,20 +92,30 @@ static inline uint64_t ticks_to_ns(uint64_t ticks)
 {
 	//UK_ASSERT(ticks <= max_convert_ticks);
 
-	return (ns_per_tick * ticks) >> counter_shift_to_ns;
+	if (*PI3_TIMER_CTL_REG & (1 << 8))
+		return (ns_per_tick * ticks) >> (counter_shift_to_ns + 1);
+	else
+		return (ns_per_tick * ticks) >> counter_shift_to_ns;
 }
 
 static inline uint64_t ns_to_ticks(uint64_t ns)
 {
 	//UK_ASSERT(ns <= __MAX_CONVERT_NS);
 
-	return (tick_per_ns * ns) >> counter_shift_to_tick;
+	if (*PI3_TIMER_CTL_REG & (1 << 8)) {
+		if (counter_shift_to_tick == 0)
+			return (tick_per_ns * ns) * 2;
+		else
+			return (tick_per_ns * ns) >> (counter_shift_to_tick - 1);
+	}
+	else
+		return (tick_per_ns * ns) >> counter_shift_to_tick;
 }
 
 /*
  * Calculate multiplier/shift factors for scaled math.
  */
-/*static void calculate_mult_shift(uint32_t *mult, uint8_t *shift,
+static void calculate_mult_shift(uint32_t *mult, uint8_t *shift,
 		uint64_t from, uint64_t to)
 {
 	uint64_t tmp;
@@ -195,12 +138,12 @@ static inline uint64_t ns_to_ticks(uint64_t ns)
 	}
 	*mult = tmp;
 	*shift = sft;
-}*/
+}
 
-/*static uint32_t generic_timer_get_frequency(void)
+static uint32_t generic_timer_get_frequency(void)
 {
 	return read_freq_from_sysreg();
-}*/
+}
 
 /*
  * monotonic_clock(): returns # of nanoseconds passed since
@@ -230,23 +173,23 @@ static inline uint64_t ns_to_ticks(uint64_t ns)
  * kind of mutex_lock. It will simply halt the cpu, not allowing any
  * other thread to execute.
  */
-/*static void generic_timer_setup_next_interrupt(uint64_t delta)
+void generic_timer_setup_next_interrupt(uint64_t delta)
 {
 	uint64_t until_ticks;
 
-	UK_ASSERT(ukplat_lcpu_irqs_disabled());
+	//UK_ASSERT(ukplat_lcpu_irqs_disabled());
 
 	until_ticks = generic_timer_get_ticks() + ns_to_ticks(delta);
 
 	generic_timer_update_compare(until_ticks);
 	generic_timer_unmask_irq();
-}*/
-
-void generic_timer_setup_next_interrupt(uint32_t delta) {
-	*TIMER_C1 = *TIMER_CLO + delta;
 }
 
-/*static int generic_timer_init(void)
+/*void generic_timer_setup_next_interrupt(uint32_t delta) {
+	*TIMER_C1 = *TIMER_CLO + delta;
+}*/
+
+static int generic_timer_init(void)
 {
 	counter_freq = generic_timer_get_frequency();
 
@@ -263,17 +206,18 @@ void generic_timer_setup_next_interrupt(uint32_t delta) {
 	max_convert_ticks = __MAX_CONVERT_SECS*counter_freq;
 
 	return 0;
-}*/
+}
 
-/*static int generic_timer_irq_handler(void *arg __unused)
+void handle_timer_irq( void ) 
 {
+	__u64 timerValue = SYSREG_READ64(cntvct_el0);
 	generic_timer_mask_irq();
-	uk_pr_debug("Timer value: %lu\n", get_system_timer());
+	generic_timer_clear_irq();
+
+	uk_pr_debug("Timer IRQ delay: %lu ns\n", ticks_to_ns(timerValue - SYSREG_READ64(cntv_cval_el0)));
 
 	generic_timer_setup_next_interrupt(NSEC_PER_SEC);
-
-	return 1;
-}*/
+}
 
 void time_block_until(__snsec until)
 {
@@ -303,42 +247,48 @@ __nsec ukplat_wall_clock(void)
 /* must be called before interrupts are enabled */
 void ukplat_time_init(void)
 {
-	/*int rc, irq;
+	int rc;
+
+	irq_vector_init();
 
 	rc = generic_timer_init();
 	if (rc < 0)
 		UK_CRASH("Failed to initialize platform time\n");
 
-	irq = 0;
-	if (irq < 0 || irq >= __MAX_IRQ)
-		UK_CRASH("Failed to translate IRQ number\n");
+	//irq = 0;
+	//if (irq < 0 || irq >= __MAX_IRQ)
+	//	UK_CRASH("Failed to translate IRQ number\n");
 
-	rc = ukplat_irq_register(irq, generic_timer_irq_handler, NULL);
-	if (rc < 0)
-		UK_CRASH("Failed to register timer interrupt handler\n");
+	//rc = ukplat_irq_register(irq, generic_timer_irq_handler, NULL);
+	//if (rc < 0)
+	//	UK_CRASH("Failed to register timer interrupt handler\n");
 
 	generic_timer_mask_irq();
 
 	generic_timer_enable();
 
 	generic_timer_setup_next_interrupt(NSEC_PER_SEC);
-	*/
+	
 
 
 
 
 
-	irq_vector_init();
-	generic_timer_setup_next_interrupt(1000000);
-	enable_interrupt_controller();
+	//irq_vector_init();
+	//generic_timer_setup_next_interrupt(1000000);
+	//enable_interrupt_controller();
+	*DISABLE_IRQS_2 = 0xFFFFFFFF;
+	*DISABLE_IRQS_1 = 0xFFFFFFFF;
+	*DISABLE_BASIC_IRQS = ~0x01;
+	*ENABLE_BASIC_IRQS = 0x01;
 	enable_irq();
 }
 
 
-void handle_timer_irq( void ) 
+/*void handle_timer_irq( void ) 
 {
 	__u32 timerValue = *TIMER_CLO;
 	uk_pr_debug("Timer IRQ delay: %u\n", timerValue - *TIMER_C1);
 	*TIMER_CS = TIMER_CS_M1;
 	generic_timer_setup_next_interrupt(1000000);
-}
+}*/
