@@ -211,7 +211,7 @@ void lfb_show_unikraft_logo()
     }
 }
 
-void lfb_show_letter(char letter, unsigned int x_pos, unsigned y_pos) {
+void lfb_show_letter(unsigned int x_pos, unsigned y_pos, char letter) {
 	if ((letter < LETTER_MIN) || (letter > LETTER_MAX))
 		return;
 
@@ -232,7 +232,7 @@ void lfb_show_letter(char letter, unsigned int x_pos, unsigned y_pos) {
     }
 }
 
-void lfb_show_string(char *str, unsigned int x_pos, unsigned y_pos) {
+void lfb_show_string(unsigned int x_pos, unsigned y_pos, char *str) {
 	unsigned int x = x_pos;
 
 	while (*str != '\0') {
@@ -243,10 +243,51 @@ void lfb_show_string(char *str, unsigned int x_pos, unsigned y_pos) {
 			if (y_pos > SCREEN_HEIGHT)
 				return;
 		} else {
-			if (x < SCREEN_WIDTH) {
-				lfb_show_letter(*str, x, y_pos);
+			lfb_show_letter(x, y_pos, *str);
+			x += letter_width;
+		}
+		str++;
+	}
+}
+
+void lfb_show_string_u(unsigned int x_pos, unsigned y_pos, char *str, unsigned int value) {
+	unsigned int x = x_pos;
+
+	while (*str != '\0') {
+		if (*str == '%') {
+			str++;
+			if (*str == 'u') {
+				str++;
+				unsigned int lenght = 1;
+				unsigned int divisor = 1;
+				unsigned int valueCopy = value;
+				valueCopy /= 10;
+				while (valueCopy > 0) {
+					valueCopy /= 10;
+					divisor *= 10;
+					lenght++;
+				}
+
+				lfb_show_letter(x, y_pos, '0' + value / divisor);
 				x += letter_width;
+				while (divisor > 1) {
+					value %= divisor;
+					divisor /= 10;
+					lfb_show_letter(x, y_pos,'0' + value / divisor);
+					x += letter_width;
+				}
+			} else {
+				str--;
 			}
+		} else if (*str == '\n') {
+			x = x_pos;
+			y_pos += letter_height;
+
+			if (y_pos > SCREEN_HEIGHT)
+				return;
+		} else {
+			lfb_show_letter(x, y_pos, *str);
+			x += letter_width;
 		}
 		str++;
 	}

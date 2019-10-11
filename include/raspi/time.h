@@ -1,4 +1,3 @@
-
 #ifndef __RASPI_TIME_H__
 #define __RASPI_TIME_H__
 
@@ -51,7 +50,6 @@
 
 
 __u64 get_system_timer(void);
-int handle_timer_irq(void *arg);
 __u32 get_timer_irq_delay(void);
 void reset_timer_irq_delay(void);
 

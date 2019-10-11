@@ -15,14 +15,16 @@
 #define DISABLE_IRQS_2		((volatile __u32 *)(PBASE+0x0000B220))
 #define DISABLE_BASIC_IRQS	((volatile __u32 *)(PBASE+0x0000B224))
 
-#define SYSTEM_TIMER_IRQ_0	(1 << 0)
-#define SYSTEM_TIMER_IRQ_1	(1 << 1)
-#define SYSTEM_TIMER_IRQ_2	(1 << 2)
-#define SYSTEM_TIMER_IRQ_3	(1 << 3)
-#define USB_IRQ				(1 << 9)
+#define IRQS_BASIC_ARM_TIMER_IRQ	(1 << 0)
 
+#define IRQS_1_SYSTEM_TIMER_IRQ_0	(1 << 0)
+#define IRQS_1_SYSTEM_TIMER_IRQ_1	(1 << 1)
+#define IRQS_1_SYSTEM_TIMER_IRQ_2	(1 << 2)
+#define IRQS_1_SYSTEM_TIMER_IRQ_3	(1 << 3)
+#define IRQS_1_USB_IRQ				(1 << 9)
 
-void enable_interrupt_controller( void );
+#define IRQS_MAX					1
+#define IRQ_ID_ARM_TIMER			0
 
 void irq_vector_init( void );
 void enable_irq( void );

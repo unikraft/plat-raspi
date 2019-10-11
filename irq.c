@@ -1,133 +1,66 @@
+#include <stdlib.h>
 #include <uk/plat/irq.h>
 #include <uk/print.h>
+#include <uk/essentials.h>
 #include <raspi/irq.h>
 #include <raspi/time.h>
-#include <raspi/delays.h>
-#include <raspi/serial_console.h>
 
-int ukplat_irq_register(unsigned long irq, irq_handler_func_t func, void *arg)
+static irq_handler_func_t irq_handlers[IRQS_MAX];
+
+int ukplat_irq_register(unsigned long irq, irq_handler_func_t func, void *arg __unused)
 {
-	irq = irq;
-	func = func;
-	arg = arg;
-	return 0;
+	if (irq == IRQ_ID_ARM_TIMER) {
+		irq_handlers[IRQ_ID_ARM_TIMER] = func;
+		*ENABLE_BASIC_IRQS = *ENABLE_BASIC_IRQS | IRQS_BASIC_ARM_TIMER_IRQ;
+		raspi_arm_side_timer_irq_clear();
+		raspi_arm_side_timer_irq_enable();
+
+		return 0;
+	}
+
+	// Unsupported IRQ
+	uk_pr_crit("ukplat_irq_register: Unsupported IRQ\n");
+	return -1;
 }
 
-int ukplat_irq_init(struct uk_alloc *a)
+int ukplat_irq_init(struct uk_alloc *a __unused)
 {
-	a = a;
-	return 0;
-}
-
-
-
-const char *entry_error_messages[] = {
-	"SYNC_INVALID_EL3t",
-	"IRQ_INVALID_EL3t",
-	"FIQ_INVALID_EL3t",
-	"ERROR_INVALID_EL3t",
-
-	"SYNC_INVALID_EL3h",
-	"IRQ_INVALID_EL3h",
-	"FIQ_INVALID_EL3h",
-	"ERROR_INVALID_EL3h",
-
-	"SYNC_INVALID_EL2_64",
-	"IRQ_INVALID_EL2_64",
-	"FIQ_INVALID_EL2_64",
-	"ERROR_INVALID_EL2_64",
-
-	"SYNC_INVALID_EL2_32",
-	"IRQ_INVALID_EL2_32",
-	"FIQ_INVALID_EL2_32",
-	"ERROR_INVALID_EL2_32",
-
-	"SYNC_INVALID_EL2t",
-	"IRQ_INVALID_EL2t",
-	"FIQ_INVALID_EL2t",
-	"ERROR_INVALID_EL2t",
-
-	"SYNC_INVALID_EL2h",
-	"IRQ_INVALID_EL2h",
-	"FIQ_INVALID_EL2h",
-	"ERROR_INVALID_EL2h",
-
-	"SYNC_INVALID_EL1_64",
-	"IRQ_INVALID_EL1_64",
-	"FIQ_INVALID_EL1_64",
-	"ERROR_INVALID_EL1_64",
-
-	"SYNC_INVALID_EL1_32",
-	"IRQ_INVALID_EL1_32",
-	"FIQ_INVALID_EL1_32",
-	"ERROR_INVALID_EL1_32",
-
-	"SYNC_INVALID_EL1t",
-	"IRQ_INVALID_EL1t",
-	"FIQ_INVALID_EL1t",
-	"ERROR_INVALID_EL1t",
-
-	"SYNC_INVALID_EL1h",
-	"IRQ_INVALID_EL1h",
-	"FIQ_INVALID_EL1h",
-	"ERROR_INVALID_EL1h",
-
-	"SYNC_INVALID_EL0_64",
-	"IRQ_INVALID_EL0_64",
-	"FIQ_INVALID_EL0_64",
-	"ERROR_INVALID_EL0_64",
-
-	"SYNC_INVALID_EL0_32",
-	"IRQ_INVALID_EL0_32",
-	"FIQ_INVALID_EL0_32",
-	"ERROR_INVALID_EL0_32",
-
-	"SYNC_INVALID_EL0t",
-	"IRQ_INVALID_EL0t",
-	"FIQ_INVALID_EL0t",
-	"ERROR_INVALID_EL0t",
-
-	"SYNC_INVALID_EL0h",
-	"IRQ_INVALID_EL0h",
-	"FIQ_INVALID_EL0h",
-	"ERROR_INVALID_EL0h",
-
-	"SYNC_INVALID_ELN_64",
-	"IRQ_INVALID_ELN_64",
-	"FIQ_INVALID_ELN_64",
-	"ERROR_INVALID_ELN_64",
-
-	"SYNC_INVALID_ELN_32",
-	"IRQ_INVALID_ELN_32",
-	"FIQ_INVALID_ELN_32",
-	"ERROR_INVALID_ELN_32"
-};
-
-void enable_interrupt_controller(void)
-{
+	*DISABLE_BASIC_IRQS = 0xFFFFFFFF;
+	*DISABLE_IRQS_1 = 0xFFFFFFFF;
 	*DISABLE_IRQS_2 = 0xFFFFFFFF;
-	*DISABLE_IRQS_1 = ~SYSTEM_TIMER_IRQ_1;
-	*ENABLE_IRQS_1 = SYSTEM_TIMER_IRQ_1;
+	irq_vector_init();
+	enable_irq();
+	return 0;
 }
 
 void show_invalid_entry_message(int type)
 {
 	uk_pr_debug("IRQ: %d\n", type);
-	uk_pr_debug("%s\n", entry_error_messages[type]);
 }
 
-void handle_irq(void)
+void ukplat_irq_handle(void)
 {
-	if (raspi_arm_side_timer_irq_triggered())
-		handle_timer_irq(0);
-	else
-		uk_pr_debug("Unknown pending irq\n");
+	__u32 irq_bits = *IRQ_BASIC_PENDING & *ENABLE_BASIC_IRQS;
+	if (irq_bits & IRQS_BASIC_ARM_TIMER_IRQ) {
+		irq_handlers[IRQ_ID_ARM_TIMER](NULL);
+		return;
+	}
 
-	/*switch (irq) {
-		case (SYSTEM_TIMER_IRQ_1):
-			handle_timer_irq();
-			break;
-		default:
-			uk_pr_debug("Unknown pending irq: %u\n", irq);
-	}*/
+	/*
+	 * Just warn about unhandled interrupts. We do this to
+	 * (1) compensate potential spurious interrupts of
+	 * devices, and (2) to minimize impact on drivers that share
+	 * one interrupt line that would then stay disabled.
+	 */
+	uk_pr_crit("ukplat_irq_handle: Unhandled IRQ\n");
+	uk_pr_crit("IRQ_BASIC_PENDING: %u\n", *IRQ_BASIC_PENDING);
+	uk_pr_crit("IRQ_PENDING_1: %u\n", *IRQ_PENDING_1);
+	uk_pr_crit("IRQ_PENDING_2: %u\n", *IRQ_PENDING_2);
+	uk_pr_crit("ENABLE_BASIC_IRQS: %u\n", *ENABLE_BASIC_IRQS);
+	uk_pr_crit("ENABLE_IRQS_1: %u\n", *ENABLE_IRQS_1);
+	uk_pr_crit("ENABLE_IRQS_2: %u\n", *ENABLE_IRQS_2);
+	uk_pr_crit("DISABLE_BASIC_IRQS: %u\n", *DISABLE_BASIC_IRQS);
+	uk_pr_crit("DISABLE_IRQS_1: %u\n", *DISABLE_IRQS_1);
+	uk_pr_crit("DISABLE_IRQS_2: %u\n", *DISABLE_IRQS_2);
+	while(1);
 }

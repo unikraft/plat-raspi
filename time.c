@@ -56,14 +56,10 @@ void raspi_arm_side_timer_init(void)
 {
 	*RASPI_ARM_SIDE_TIMER_CTL = RASPI_ARM_SIDE_TIMER_CTL_ENABLE_BIT | RASPI_ARM_SIDE_TIMER_CTL_BITS_BIT;
 	*RASPI_ARM_SIDE_TIMER_PREDIVIDER = 0;
-	*ENABLE_BASIC_IRQS = 0x01;
-
 	*RASPI_ARM_SIDE_TIMER_LOAD = RASPI_ARM_SIDE_TIMER_LOAD_INIT;
-	raspi_arm_side_timer_irq_clear();
-	raspi_arm_side_timer_irq_enable();
 }
 
-int handle_timer_irq(void *arg __unused)
+static int handle_timer_irq(void *arg __unused)
 {
 	__u64 timerValue1 = raspi_arm_side_timer_get_value();
 	__u64 timerValue2 = raspi_arm_side_timer_get_value();
@@ -102,11 +98,9 @@ void ukplat_time_init(void)
 {
 	int rc;
 
-	irq_vector_init();
-
 	raspi_arm_side_timer_init();
 
-	rc = ukplat_irq_register(0, handle_timer_irq, NULL);
+	rc = ukplat_irq_register(IRQ_ID_ARM_TIMER, handle_timer_irq, NULL);
 	if (rc < 0)
 		UK_CRASH("Failed to register timer interrupt handler\n");
 }

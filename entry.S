@@ -343,17 +343,17 @@ error_invalid_eln_32:
 
 el2_irq:
 	kernel_entry 
-	bl	handle_irq
+	bl	ukplat_irq_handle
 	kernel_exit
 
 el1_irq:
 	kernel_entry 
-	bl	handle_irq
+	bl	ukplat_irq_handle
 	kernel_exit
 
 el0_irq:
 	kernel_entry 
-	bl	handle_irq
+	bl	ukplat_irq_handle
 	kernel_exit
 
 .globl err_hang

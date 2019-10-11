@@ -25,5 +25,6 @@
 
 void lfb_init();
 void lfb_show_unikraft_logo();
-void lfb_show_letter(char letter, unsigned int x_pos, unsigned y_pos);
-void lfb_show_string(char *str, unsigned int x_pos, unsigned y_pos);
+void lfb_show_letter(unsigned int x_pos, unsigned y_pos, char letter);
+void lfb_show_string(unsigned int x_pos, unsigned y_pos, char *str);
+void lfb_show_string_u(unsigned int x_pos, unsigned y_pos, char *str, unsigned int value);
