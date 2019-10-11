@@ -38,7 +38,7 @@
 #include <arm/cpu.h>
 #include <raspi/lfb.h>
 #include <raspi/console.h>
-#include <raspi/delays.h>
+#include <raspi/time.h>
 #include <uk/print.h>
 #include <uk/arch/types.h>
 
@@ -76,6 +76,5 @@ void _libraspiplat_entry(__u64 low0, __u64 hi0, __u64 low1, __u64 hi1)
 	/*
 	 * Enter Unikraft
 	 */
-	//main(0, 0);
 	ukplat_entry(0, 0);
 }

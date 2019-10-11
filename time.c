@@ -36,29 +36,16 @@
 #include <uk/plat/time.h>
 #include <uk/plat/lcpu.h>
 #include <uk/plat/irq.h>
-#include <arm/time.h>
 #include <cpu.h>
 #include <irq.h>
+#include <arm/time.h>
 
-typedef __u64 uint64_t;
-typedef __u32 uint32_t;
 
-#include <raspi/delays.h>
 #include <raspi/irq.h>
 #include <raspi/time.h>
 #include <uk/print.h>
 
-
-#define PI3_TIMER_CTL_REG	((volatile __u32 *)(0x40000000+0))
-static inline void generic_timer_clear_irq(void)
-{
-	cntv_ctl_set(cntv_ctl_get() & (~GT_TIMER_IRQ_STATUS));
-
-	/* Ensure the write of sys register is visible */
-	isb();
-}
-
-
+static uint64_t boot_ticks;
 static uint32_t counter_freq;
 
 
@@ -92,24 +79,14 @@ static inline uint64_t ticks_to_ns(uint64_t ticks)
 {
 	//UK_ASSERT(ticks <= max_convert_ticks);
 
-	if (*PI3_TIMER_CTL_REG & (1 << 8))
-		return (ns_per_tick * ticks) >> (counter_shift_to_ns + 1);
-	else
-		return (ns_per_tick * ticks) >> counter_shift_to_ns;
+	return (ns_per_tick * ticks) >> counter_shift_to_ns;
 }
 
 static inline uint64_t ns_to_ticks(uint64_t ns)
 {
 	//UK_ASSERT(ns <= __MAX_CONVERT_NS);
 
-	if (*PI3_TIMER_CTL_REG & (1 << 8)) {
-		if (counter_shift_to_tick == 0)
-			return (tick_per_ns * ns) * 2;
-		else
-			return (tick_per_ns * ns) >> (counter_shift_to_tick - 1);
-	}
-	else
-		return (tick_per_ns * ns) >> counter_shift_to_tick;
+	return (tick_per_ns * ns) >> counter_shift_to_tick;
 }
 
 /*
@@ -121,6 +98,10 @@ static void calculate_mult_shift(uint32_t *mult, uint8_t *shift,
 	uint64_t tmp;
 	uint32_t sft, sftacc = 32;
 
+	/*
+	 * Calculate the shift factor which is limiting the conversion
+	 * range:
+	 */
 	tmp = ((uint64_t)__MAX_CONVERT_SECS * from) >> 32;
 	while (tmp) {
 		tmp >>= 1;
@@ -128,9 +109,21 @@ static void calculate_mult_shift(uint32_t *mult, uint8_t *shift,
 	}
 
 
+	/*
+	 * Calculate shift factor (S) and scaling multiplier (M).
+	 *
+	 * (S) needs to be the largest shift factor (<= max_shift) where
+	 * the result of the M calculation below fits into uint32_t
+	 * without truncation.
+	 *
+	 * multiplier = (target << shift) / source
+	 */
 	for (sft = 32; sft > 0; sft--) {
 		tmp = (uint64_t) to << sft;
 
+		/* Ensuring we round to nearest when calculating the
+		 * multiplier
+		 */
 		tmp += from / 2;
 		tmp /= from;
 		if ((tmp >> sftacc) == 0)
@@ -140,27 +133,100 @@ static void calculate_mult_shift(uint32_t *mult, uint8_t *shift,
 	*shift = sft;
 }
 
+static inline void generic_timer_enable(void)
+{
+	set_el0(cntv_ctl, get_el0(cntv_ctl) | GT_TIMER_ENABLE);
+
+	/* Ensure the write of sys register is visible */
+	isb();
+}
+
+static inline void generic_timer_disable(void)
+{
+	set_el0(cntv_ctl, get_el0(cntv_ctl) & ~GT_TIMER_ENABLE);
+
+	/* Ensure the write of sys register is visible */
+	isb();
+}
+
+static inline void generic_timer_mask_irq(void)
+{
+	set_el0(cntv_ctl, get_el0(cntv_ctl) | GT_TIMER_MASK_IRQ);
+
+	/* Ensure the write of sys register is visible */
+	isb();
+}
+
+static inline void generic_timer_unmask_irq(void)
+{
+	set_el0(cntv_ctl, get_el0(cntv_ctl) & ~GT_TIMER_MASK_IRQ);
+
+	/* Ensure the write of sys register is visible */
+	isb();
+}
+
+static inline void generic_timer_clear_irq(void)
+{
+	set_el0(cntv_ctl, get_el0(cntv_ctl) & ~GT_TIMER_IRQ_STATUS);
+
+	/* Ensure the write of sys register is visible */
+	isb();
+}
+
+static inline void generic_timer_update_compare(uint64_t new_val)
+{
+	set_el0(cntv_cval, new_val);
+
+	/* Ensure the write of sys register is visible */
+	isb();
+}
+
+#ifdef CONFIG_ARM64_ERRATUM_858921
+/*
+ * The errata #858921 describes that Cortex-A73 (r0p0 - r0p2) counter
+ * read can return a wrong value when the counter crosses a 32bit boundary.
+ * But newer Cortex-A73 are not affected.
+ *
+ * The workaround involves performing the read twice, compare bit[32] of
+ * the two read values. If bit[32] is different, keep the first value,
+ * otherwise keep the second value.
+ */
+static uint64_t generic_timer_get_ticks(void)
+{
+	uint64_t val_1st, val_2nd;
+
+	val_1st = get_el0(cntvct);
+	val_2nd = get_el0(cntvct);
+	return (((val_1st ^ val_2nd) >> 32) & 1) ? val_1st : val_2nd;
+}
+#else
+static inline uint64_t generic_timer_get_ticks(void)
+{
+	return get_el0(cntvct);
+}
+#endif
+
 static uint32_t generic_timer_get_frequency(void)
 {
-	return read_freq_from_sysreg();
+	return get_el0(cntfrq);
 }
 
 /*
  * monotonic_clock(): returns # of nanoseconds passed since
  * generic_timer_time_init()
  */
-/*static __nsec generic_timer_monotonic(void)
+static __nsec generic_timer_monotonic(void)
 {
-	return (__nsec)ticks_to_ns(generic_timer_get_ticks());
-}*/
+	return (__nsec)ticks_to_ns(generic_timer_get_ticks() - boot_ticks);
+}
 
 /*
  * Return epoch offset (wall time offset to monotonic clock start).
  */
-/*static uint64_t generic_timer_epochoffset(void)
+static uint64_t generic_timer_epochoffset(void)
 {
 	return 0;
-}*/
+}
 
 /*
  * Returns early if any interrupts are serviced, or if the requested delay is
@@ -185,22 +251,29 @@ void generic_timer_setup_next_interrupt(uint64_t delta)
 	generic_timer_unmask_irq();
 }
 
-/*void generic_timer_setup_next_interrupt(uint32_t delta) {
-	*TIMER_C1 = *TIMER_CLO + delta;
-}*/
-
 static int generic_timer_init(void)
 {
+	/* Get counter frequency from DTB or register */
 	counter_freq = generic_timer_get_frequency();
 
+	/*
+	 * Calculate the shift factor and scaling multiplier for
+	 * converting ticks to ns.
+	 */
 	calculate_mult_shift(&ns_per_tick, &counter_shift_to_ns,
 				counter_freq, NSEC_PER_SEC);
 
+	/* We disallow zero ns_per_tick */
 	UK_BUGON(!ns_per_tick);
 
+	/*
+	 * Calculate the shift factor and scaling multiplier for
+	 * converting ns to ticks.
+	 */
 	calculate_mult_shift(&tick_per_ns, &counter_shift_to_tick,
 				NSEC_PER_SEC, counter_freq);
 
+	/* We disallow zero ns_per_tick */
 	UK_BUGON(!tick_per_ns);
 
 	max_convert_ticks = __MAX_CONVERT_SECS*counter_freq;
@@ -208,15 +281,24 @@ static int generic_timer_init(void)
 	return 0;
 }
 
-void handle_timer_irq( void ) 
+/*void handle_timer_irq(void)
 {
 	__u64 timerValue = SYSREG_READ64(cntvct_el0);
 	generic_timer_mask_irq();
 	generic_timer_clear_irq();
 
-	uk_pr_debug("Timer IRQ delay: %lu ns\n", ticks_to_ns(timerValue - SYSREG_READ64(cntv_cval_el0)));
-
 	generic_timer_setup_next_interrupt(NSEC_PER_SEC);
+}*/
+
+void handle_timer_irq(void)
+{
+	__u64 timerValue = raspi_arm_side_timer_get_value();
+	raspi_arm_side_timer_irq_disable();
+	raspi_arm_side_timer_irq_clear();
+
+	uk_pr_debug("Timer IRQ delay: %lu cycles\n", raspi_arm_side_timer_get_load() - timerValue);
+
+	//raspi_arm_side_timer_irq_enable();
 }
 
 void time_block_until(__snsec until)
@@ -228,67 +310,85 @@ void time_block_until(__snsec until)
 /* return ns since time_init() */
 __nsec ukplat_monotonic_clock(void)
 {
-	return 42;
-	//return generic_timer_monotonic();
+	return generic_timer_monotonic();
 }
 
 /* return wall time in nsecs */
 __nsec ukplat_wall_clock(void)
 {
-	return 43;
-	//return generic_timer_monotonic() + generic_timer_epochoffset();
+	return generic_timer_monotonic() + generic_timer_epochoffset();
 }
-
-
-
-
-
 
 /* must be called before interrupts are enabled */
 void ukplat_time_init(void)
 {
 	int rc;
+	//int rc, irq, fdt_timer;
+	//uint32_t irq_type, hwirq;
+	//uint32_t trigger_type;
+
+
+	/*
+	 * Monotonic time begins at boot_ticks (first read of counter
+	 * before calibration).
+	 */
+	boot_ticks = generic_timer_get_ticks();
 
 	irq_vector_init();
+
+	/* Currently, we only support 1 timer per system */
+	//fdt_timer = fdt_node_offset_by_compatible_list(_libkvmplat_cfg.dtb,
+	//			-1, arch_timer_list);
+	//if (fdt_timer < 0)
+	//	UK_CRASH("Could not find arch timer!\n");
+
 
 	rc = generic_timer_init();
 	if (rc < 0)
 		UK_CRASH("Failed to initialize platform time\n");
 
-	//irq = 0;
+	//rc = gic_get_irq_from_dtb(_libkvmplat_cfg.dtb, fdt_timer, 2,
+	//		&irq_type, &hwirq, &trigger_type);
+	//if (rc < 0)
+	//	UK_CRASH("Failed to find IRQ number from DTB\n");
+
+	//irq = gic_irq_translate(irq_type, hwirq);
 	//if (irq < 0 || irq >= __MAX_IRQ)
-	//	UK_CRASH("Failed to translate IRQ number\n");
+	//	UK_CRASH("Failed to translate IRQ number, type=%u, hwirq=%u\n",
+	//		irq_type, hwirq);
 
 	//rc = ukplat_irq_register(irq, generic_timer_irq_handler, NULL);
 	//if (rc < 0)
 	//	UK_CRASH("Failed to register timer interrupt handler\n");
 
+	/*
+	 * Mask IRQ before scheduler start working. Otherwise we will get
+	 * unexpected timer interrupts when system is booting.
+	 */
 	generic_timer_mask_irq();
 
+	/* Enable timer */
 	generic_timer_enable();
 
-	generic_timer_setup_next_interrupt(NSEC_PER_SEC);
-	
-
-
-
-
-
-	//irq_vector_init();
-	//generic_timer_setup_next_interrupt(1000000);
-	//enable_interrupt_controller();
-	*DISABLE_IRQS_2 = 0xFFFFFFFF;
-	*DISABLE_IRQS_1 = 0xFFFFFFFF;
-	*DISABLE_BASIC_IRQS = ~0x01;
-	*ENABLE_BASIC_IRQS = 0x01;
-	enable_irq();
+	//enable_irq();
 }
 
-
-/*void handle_timer_irq( void ) 
+/**
+ * Get System Timer's counter
+ */
+__u64 get_system_timer(void)
 {
-	__u32 timerValue = *TIMER_CLO;
-	uk_pr_debug("Timer IRQ delay: %u\n", timerValue - *TIMER_C1);
-	*TIMER_CS = TIMER_CS_M1;
-	generic_timer_setup_next_interrupt(1000000);
-}*/
+	__u32 h, l;
+	// we must read MMIO area as two separate 32 bit reads
+	h = *RASPI_SYS_TIMER_CHI;
+	l = *RASPI_SYS_TIMER_CLO;
+	// we have to repeat it if high word changed during read
+	if (h != *RASPI_SYS_TIMER_CHI)
+	{
+		h = *RASPI_SYS_TIMER_CHI;
+		l = *RASPI_SYS_TIMER_CLO;
+	}
+	// compose long int value
+	return ((__u64)h << 32) | l;
+}
+
