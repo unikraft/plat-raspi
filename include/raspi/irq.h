@@ -30,6 +30,4 @@ void disable_irq( void );
 int get_el ( void );
 int get_spsel ( void );
 
-void handle_timer_irq(void);
-
 #endif /* __RASPI_IRQ_H__ */

@@ -32,7 +32,7 @@
 #define RASPI_ARM_SIDE_TIMER_CTL		((volatile __u32 *)(RASPI_ARM_SIDE_TIMER_BASE+0x408))
 #define RASPI_ARM_SIDE_TIMER_IRQ_CLEAR	((volatile __u32 *)(RASPI_ARM_SIDE_TIMER_BASE+0x40C))
 #define RASPI_ARM_SIDE_TIMER_RAW_IRQ	((volatile __u32 *)(RASPI_ARM_SIDE_TIMER_BASE+0x410))
-#define RASPI_ARM_SIDE_TIMER_MASK_IRQ	((volatile __u32 *)(RASPI_ARM_SIDE_TIMER_BASE+0x414))
+#define RASPI_ARM_SIDE_TIMER_MASKED_IRQ	((volatile __u32 *)(RASPI_ARM_SIDE_TIMER_BASE+0x414))
 #define RASPI_ARM_SIDE_TIMER_RELOAD		((volatile __u32 *)(RASPI_ARM_SIDE_TIMER_BASE+0x418))
 #define RASPI_ARM_SIDE_TIMER_PREDIVIDER	((volatile __u32 *)(RASPI_ARM_SIDE_TIMER_BASE+0x41C))
 #define RASPI_ARM_SIDE_TIMER_FREE		((volatile __u32 *)(RASPI_ARM_SIDE_TIMER_BASE+0x420))
@@ -47,10 +47,12 @@
 #define raspi_arm_side_timer_irq_enable()	{*RASPI_ARM_SIDE_TIMER_CTL = *RASPI_ARM_SIDE_TIMER_CTL | RASPI_ARM_SIDE_TIMER_CTL_IRQ_BIT; }
 #define raspi_arm_side_timer_irq_disable()	{*RASPI_ARM_SIDE_TIMER_CTL = *RASPI_ARM_SIDE_TIMER_CTL & ~RASPI_ARM_SIDE_TIMER_CTL_IRQ_BIT; }
 #define raspi_arm_side_timer_irq_clear()	{*RASPI_ARM_SIDE_TIMER_IRQ_CLEAR = 1; }
+#define raspi_arm_side_timer_irq_triggered() (*RASPI_ARM_SIDE_TIMER_MASKED_IRQ & 1)
 
 
 __u64 get_system_timer(void);
-void handle_timer_irq(void);
-void generic_timer_setup_next_interrupt(__u64 delta);
+int handle_timer_irq(void *arg);
+__u32 get_timer_irq_delay(void);
+void reset_timer_irq_delay(void);
 
 #endif /* __RASPI_TIME_H__ */

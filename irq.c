@@ -118,8 +118,10 @@ void show_invalid_entry_message(int type)
 
 void handle_irq(void)
 {
-	handle_timer_irq();
-	return;
+	if (raspi_arm_side_timer_irq_triggered())
+		handle_timer_irq(0);
+	else
+		uk_pr_debug("Unknown pending irq\n");
 
 	/*switch (irq) {
 		case (SYSTEM_TIMER_IRQ_1):
