@@ -64,6 +64,39 @@
 #include <raspi/pixmaps/letter_Yu.h>
 #include <raspi/pixmaps/letter_Zu.h>
 #include <raspi/pixmaps/letter_space.h>
+#include <raspi/pixmaps/letter_ampersand.h>
+#include <raspi/pixmaps/letter_apostrophe.h>
+#include <raspi/pixmaps/letter_asterisk.h>
+#include <raspi/pixmaps/letter_at.h>
+#include <raspi/pixmaps/letter_backslash.h>
+#include <raspi/pixmaps/letter_bar.h>
+#include <raspi/pixmaps/letter_brackets_left.h>
+#include <raspi/pixmaps/letter_brackets_right.h>
+#include <raspi/pixmaps/letter_colon.h>
+#include <raspi/pixmaps/letter_comma.h>
+#include <raspi/pixmaps/letter_curly_braces_left.h>
+#include <raspi/pixmaps/letter_curly_braces_right.h>
+#include <raspi/pixmaps/letter_dollar.h>
+#include <raspi/pixmaps/letter_dot.h>
+#include <raspi/pixmaps/letter_equal.h>
+#include <raspi/pixmaps/letter_exclamationmark.h>
+#include <raspi/pixmaps/letter_greaterthan.h>
+#include <raspi/pixmaps/letter_hashtag.h>
+#include <raspi/pixmaps/letter_hat.h>
+#include <raspi/pixmaps/letter_lesserthan.h>
+#include <raspi/pixmaps/letter_lowerdash.h>
+#include <raspi/pixmaps/letter_minus.h>
+#include <raspi/pixmaps/letter_parentheses_left.h>
+#include <raspi/pixmaps/letter_parentheses_right.h>
+#include <raspi/pixmaps/letter_percentage.h>
+#include <raspi/pixmaps/letter_plus.h>
+#include <raspi/pixmaps/letter_questionmark.h>
+#include <raspi/pixmaps/letter_quote.h>
+#include <raspi/pixmaps/letter_semicolon.h>
+#include <raspi/pixmaps/letter_similar.h>
+#include <raspi/pixmaps/letter_slash.h>
+#include <raspi/pixmaps/letter_tilde.h>
+
 
 #define HEADER_PIXEL(data,pixel) {\
 pixel[0] = (((data[0] - 33) << 2) | ((data[1] - 33) >> 4)); \

@@ -23,6 +23,8 @@
  *
  */
 
+#define LFB_LIB_SIZE_BYTES	(1708072)
+
 void lfb_init();
 void lfb_show_unikraft_logo();
 void lfb_show_letter(unsigned int x_pos, unsigned y_pos, char letter);

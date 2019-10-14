@@ -75,6 +75,18 @@ el1_entry:
     ldr     x1, =_start
 	mov		sp, x1
 
+/*
+    // Watermark Stack
+    ldr     x1, = 0
+    ldr     w2, = 0x10000
+watermark_stack: 
+	cbz     w2, clear_bss_start
+    str     x2, [x1], #8
+    sub     w2, w2, #1
+    cbnz    w2, watermark_stack
+*/
+
+clear_bss_start:
     // Clear bss
     ldr     x1, =__bss_start
     ldr     w2, =__bss_size
@@ -94,3 +106,13 @@ jump_to_C:
 
 	// As a failsafe, we also hang the main core
     b       hang
+
+.globl get_sp
+get_sp:
+    mov		x0, sp
+    ret
+
+.globl get_sp_start
+get_sp_start:
+    ldr     x1, =_start
+    ret

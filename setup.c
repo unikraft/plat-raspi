@@ -36,7 +36,9 @@
 #include <uk/plat/bootstrap.h>
 #include <uk/plat/time.h>
 #include <arm/cpu.h>
-#include <raspi/lfb.h>
+#if CONFIG_RASPI_LCD
+	#include <raspi/lfb.h>
+#endif
 #include <raspi/console.h>
 #include <raspi/time.h>
 #include <uk/print.h>
@@ -69,7 +71,10 @@ void _libraspiplat_entry(__u64 low0, __u64 hi0, __u64 low1, __u64 hi1)
 
     // Set up serial console and linear frame buffer
     _libraspiplat_init_console();
-    lfb_init();
+	#if CONFIG_RASPI_LCD
+    	lfb_init();
+	#endif
+	
 
 	hardware_init_done = get_system_timer();
 

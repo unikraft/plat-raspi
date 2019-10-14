@@ -3,7 +3,7 @@
 static unsigned int unikraft_logo_width = 800;
 static unsigned int unikraft_logo_height = 480;
 
-static char *unikraft_logo_data =
+static const char *unikraft_logo_data =
 	"````````````````````````````````````````````````````````````````"
 	"````````````````````````````````````````````````````````````````"
 	"````````````````````````````````````````````````````````````````"

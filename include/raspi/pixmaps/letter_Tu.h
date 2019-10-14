@@ -1,6 +1,6 @@
 /*  GIMP header image file format (RGB):  */
 
-static char *letter_T_data =
+static const char *letter_T_data =
 	"````_PL[_0DY_0DY_0DY_0DY_0DY_0DY_0DY_0DY_0DY_0DY_0DY_0DY_0DY`0T]"
 	"````````C)C)!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	"Q]0$````````C)C)!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
