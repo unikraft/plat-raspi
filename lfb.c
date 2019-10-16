@@ -257,7 +257,6 @@ void lfb_show_string_u(unsigned int x_pos, unsigned y_pos, char *str, unsigned i
 		if (*str == '%') {
 			str++;
 			if (*str == 'u') {
-				str++;
 				unsigned int lenght = 1;
 				unsigned int divisor = 1;
 				unsigned int valueCopy = value;

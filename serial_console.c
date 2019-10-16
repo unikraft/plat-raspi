@@ -133,7 +133,6 @@ void serial_console_send_string_i(char *str, int value) {
 		if (*str == '%') {
 			str++;
 			if (*str == 'd') {
-				str++;
 				int lenght = 1;
 				int divisor = 1;
 				int valueCopy = value;
@@ -167,7 +166,6 @@ void serial_console_send_string_u(char *str, unsigned int value) {
 		if (*str == '%') {
 			str++;
 			if (*str == 'u') {
-				str++;
 				unsigned int  lenght = 1;
 				unsigned int divisor = 1;
 				unsigned int valueCopy = value;
@@ -203,7 +201,6 @@ void serial_console_send_string_lu(char *str, unsigned long value) {
 			if (*str == 'l') {
 				str++;
 				if (*str == 'u') {
-					str++;
 					unsigned long lenght = 1;
 					unsigned long divisor = 1;
 					unsigned long valueCopy = value;
