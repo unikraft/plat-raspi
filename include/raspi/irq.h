@@ -23,8 +23,9 @@
 #define IRQS_1_SYSTEM_TIMER_IRQ_3	(1 << 3)
 #define IRQS_1_USB_IRQ				(1 << 9)
 
-#define IRQS_MAX					1
-#define IRQ_ID_ARM_TIMER			0
+#define IRQS_MAX							2
+#define IRQ_ID_ARM_GENERIC_TIMER			0
+#define IRQ_ID_RASPI_ARM_SIDE_TIMER			1
 
 void irq_vector_init( void );
 void enable_irq( void );

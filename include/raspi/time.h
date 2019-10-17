@@ -16,13 +16,13 @@
 #define RASPI_SYS_TIMER_CS_M3		(1 << 3)
 
 
-//#define RASPI_ARM_TIMER_BASE		(0x40000000)
+#define RASPI_ARM_TIMER_BASE		(0x40000000)
 //#define RASPI_ARM_TIMER_CTL			((volatile __u32 *)(RASPI_ARM_TIMER_BASE+0x00))
 //#define RASPI_ARM_TIMER_PRESCALER	((volatile __u32 *)(RASPI_ARM_TIMER_BASE+0x08))
 //#define RASPI_ARM_GPU_IRQ_ROUTNG	((volatile __u32 *)(RASPI_ARM_TIMER_BASE+0x0C))
 //#define RASPI_ARM_TIMER_LOW			((volatile __u32 *)(RASPI_ARM_TIMER_BASE+0x1C))
 //#define RASPI_ARM_TIMER_HIGH		((volatile __u32 *)(RASPI_ARM_TIMER_BASE+0x20))
-//#define RASPI_ARM_C0_TIMER_IRQ_CTL	((volatile __u32 *)(RASPI_ARM_TIMER_BASE+0x40))
+#define RASPI_ARM_C0_TIMER_IRQ_CTL	((volatile __u32 *)(RASPI_ARM_TIMER_BASE+0x40))
 
 
 #define RASPI_ARM_SIDE_TIMER_BASE		(0x3F00B000)
@@ -49,6 +49,7 @@
 #define raspi_arm_side_timer_irq_triggered() (*RASPI_ARM_SIDE_TIMER_MASKED_IRQ & 1)
 
 
+void raspi_irq_delay_measurements_init(void);
 __u64 get_system_timer(void);
 __u32 get_timer_irq_delay(void);
 void reset_timer_irq_delay(void);

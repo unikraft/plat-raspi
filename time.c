@@ -52,14 +52,15 @@
 
 static __u32 timer_irq_delay;
 
-void raspi_arm_side_timer_init(void)
+static void raspi_arm_side_timer_init(void)
 {
 	*RASPI_ARM_SIDE_TIMER_CTL = RASPI_ARM_SIDE_TIMER_CTL_ENABLE_BIT | RASPI_ARM_SIDE_TIMER_CTL_BITS_BIT;
 	*RASPI_ARM_SIDE_TIMER_PREDIVIDER = 0;
 	*RASPI_ARM_SIDE_TIMER_LOAD = RASPI_ARM_SIDE_TIMER_LOAD_INIT;
 }
 
-static int handle_timer_irq(void *arg __unused)
+
+static int handle_raspi_side_timer_irq(void *arg __unused)
 {
 	__u64 timerValue1 = raspi_arm_side_timer_get_value();
 	__u64 timerValue2 = raspi_arm_side_timer_get_value();
@@ -75,35 +76,17 @@ static int handle_timer_irq(void *arg __unused)
 	return 1;
 }
 
-void time_block_until(__snsec until __unused)
-{
-	until = until;
-	return;
-}
-
-/* return ns since time_init() */
-__nsec ukplat_monotonic_clock(void)
-{
-	return get_system_timer() * NSEC_PER_USEC;
-}
-
-/* return wall time in nsecs */
-__nsec ukplat_wall_clock(void)
-{
-	return get_system_timer() * NSEC_PER_USEC;
-}
-
-/* must be called before interrupts are enabled */
-void ukplat_time_init(void)
+void raspi_irq_delay_measurements_init(void)
 {
 	int rc;
 
 	raspi_arm_side_timer_init();
 
-	rc = ukplat_irq_register(IRQ_ID_ARM_TIMER, handle_timer_irq, NULL);
+	rc = ukplat_irq_register(IRQ_ID_RASPI_ARM_SIDE_TIMER, handle_raspi_side_timer_irq, NULL);
 	if (rc < 0)
 		UK_CRASH("Failed to register timer interrupt handler\n");
 }
+
 
 /**
  * Get System Timer's counter
