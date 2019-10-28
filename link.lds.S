@@ -25,7 +25,8 @@
 #include <uk/arch/limits.h>
 #include <common.lds.h>
 
-#define RAM_BASE_ADDR 0x80000
+#define RAM_BASE_ADDR	0x80000
+#define RAM_END_ADDRESS	0x3E000000
 
 OUTPUT_FORMAT("elf64-littleaarch64")
 OUTPUT_ARCH(aarch64)
@@ -49,8 +50,8 @@ SECTIONS
 		*(.gnu.linkonce.t*)
 	}
 
-	//. = ALIGN(__PAGE_SIZE);
-	//_etext = .;
+	. = ALIGN(__PAGE_SIZE);
+	_etext = .;
 
 	//EXCEPTION_SECTIONS
 
@@ -113,6 +114,14 @@ SECTIONS
         *(COMMON)
         __bss_end = .;
     }
+
+	. = ALIGN(__PAGE_SIZE);
+	.heap (NOLOAD) :
+	{
+		__heap_start = .;
+		. = RAM_END_ADDRESS;
+		__heap_end = .;
+	}
     _end = .;
 
 	//DEBUG_SYMBOLS
