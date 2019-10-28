@@ -36,21 +36,79 @@
 #include <uk/plat/time.h>
 #include <uk/plat/lcpu.h>
 #include <uk/plat/irq.h>
+#include <uk/bitops.h>
 #include <uk/essentials.h>
 #include <cpu.h>
 #include <irq.h>
 #include <arm/time.h>
-
-#include <raspi/irq.h>
 #include <raspi/time.h>
-#include <uk/print.h>
+#include <raspi/irq.h>
 
-/* How many nanoseconds per microsecond */
-#define NSEC_PER_USEC		(1000)
-#define RASPI_FREQUENCY		(250000000)
 #define RASPI_ARM_SIDE_TIMER_LOAD_INIT	(0x00FFFFFF)
 
 static __u32 timer_irq_delay;
+
+void generic_timer_mask_irq(void)
+{
+	set_el0(cntv_ctl, get_el0(cntv_ctl) | GT_TIMER_MASK_IRQ);
+	*RASPI_ARM_C0_TIMER_IRQ_CTL = *RASPI_ARM_C0_TIMER_IRQ_CTL & ~RASPI_ARM_C0_TIMER_IRQ_CTL_CNTVIRQ_BIT;
+
+	/* Ensure the write of sys register is visible */
+	isb();
+}
+
+void generic_timer_unmask_irq(void)
+{
+	set_el0(cntv_ctl, get_el0(cntv_ctl) & ~GT_TIMER_MASK_IRQ);
+	*RASPI_ARM_C0_TIMER_IRQ_CTL = *RASPI_ARM_C0_TIMER_IRQ_CTL | RASPI_ARM_C0_TIMER_IRQ_CTL_CNTVIRQ_BIT;
+
+	/* Ensure the write of sys register is visible */
+	isb();
+}
+
+uint32_t generic_timer_get_frequency(int fdt_timer __unused)
+{
+	return get_el0(cntfrq);
+}
+
+unsigned long sched_have_pending_events;
+
+void time_block_until(__snsec until)
+{
+	while ((__snsec) ukplat_monotonic_clock() < until) {
+		generic_timer_cpu_block_until(until);
+	}
+}
+
+/* must be called before interrupts are enabled */
+void ukplat_time_init(void)
+{
+	int rc;
+
+	/*
+	 * Monotonic time begins at boot_ticks (first read of counter
+	 * before calibration).
+	 */
+	generic_timer_update_boot_ticks();
+
+	/* Currently, we only support 1 timer per system */
+	rc = generic_timer_init(0);
+	if (rc < 0)
+		UK_CRASH("Failed to initialize platform time\n");
+
+	rc = ukplat_irq_register(IRQ_ID_ARM_GENERIC_TIMER, generic_timer_irq_handler, NULL);
+	if (rc < 0)
+		UK_CRASH("Failed to register timer interrupt handler\n");
+
+	/*
+	 * Mask IRQ before scheduler start working. Otherwise we will get
+	 * unexpected timer interrupts when system is booting.
+	 */
+	generic_timer_mask_irq();
+
+	/* Enable timer */
+	generic_timer_enable();
+}
 
 static void raspi_arm_side_timer_init(void)
 {
@@ -58,7 +116,6 @@ static void raspi_arm_side_timer_init(void)
 	*RASPI_ARM_SIDE_TIMER_PREDIVIDER = 0;
 	*RASPI_ARM_SIDE_TIMER_LOAD = RASPI_ARM_SIDE_TIMER_LOAD_INIT;
 }
-
 
 static int handle_raspi_side_timer_irq(void *arg __unused)
 {
@@ -116,3 +173,4 @@ void reset_timer_irq_delay(void)
 {
 	timer_irq_delay = 0;
 }
+
