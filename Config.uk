@@ -13,6 +13,13 @@ menuconfig PLAT_RASPI
 if (PLAT_RASPI)
 
 menu "Console Options"
+config RASPI_PRINTF_SERIAL_CONSOLE
+        bool "Serial console for printf"
+        default y
+        depends on ARCH_ARM_64
+        help
+          Choose serial console for printf
+
 config RASPI_KERNEL_SERIAL_CONSOLE
         bool "Serial console for the kernel prints"
         default n

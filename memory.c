@@ -2,6 +2,7 @@
 #include <uk/plat/memory.h>
 #include <sections.h>
 #include <uk/essentials.h>
+#include <raspi/sysregs.h>
 
 int ukplat_memregion_count(void)
 {
@@ -69,7 +70,7 @@ int ukplat_memregion_get(int i, struct ukplat_memregion_desc *m)
 		break;
 	case 5: /* bss */
 		m->base  = (void *) __BSS_START;
-		m->len   = (size_t) __BSS_END - (size_t) __BSS_START;
+		m->len   = (size_t) __END - (size_t) __BSS_START;
 		m->flags = (UKPLAT_MEMRF_RESERVED
 			    | UKPLAT_MEMRF_READABLE
 			    | UKPLAT_MEMRF_WRITABLE);
@@ -79,8 +80,8 @@ int ukplat_memregion_get(int i, struct ukplat_memregion_desc *m)
 		ret = 0;
 		break;
 	case 6: /* heap */
-		m->base  = (void *) __HEAP_START;
-		m->len   = (size_t) __HEAP_END - (size_t) __HEAP_START;
+		m->base  = (void *) __END;
+		m->len   = (size_t) (MMIO_BASE - 1) - (size_t) __END;
 		m->flags = UKPLAT_MEMRF_ALLOCATABLE;
 #if CONFIG_UKPLAT_MEMRNAME
 		m->name  = "heap";

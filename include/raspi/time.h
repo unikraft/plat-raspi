@@ -1,7 +1,9 @@
 #ifndef __RASPI_TIME_H__
 #define __RASPI_TIME_H__
 
-#define RASPI_SYS_TIMER_BASE		(0x3F000000)
+#include "sysregs.h"
+
+#define RASPI_SYS_TIMER_BASE		MMIO_BASE
 #define RASPI_SYS_TIMER_CS			((volatile __u32 *)(RASPI_SYS_TIMER_BASE+0x00003000))
 #define RASPI_SYS_TIMER_CLO			((volatile __u32 *)(RASPI_SYS_TIMER_BASE+0x00003004))
 #define RASPI_SYS_TIMER_CHI			((volatile __u32 *)(RASPI_SYS_TIMER_BASE+0x00003008))

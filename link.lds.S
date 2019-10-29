@@ -116,12 +116,6 @@ SECTIONS
     }
 
 	. = ALIGN(__PAGE_SIZE);
-	.heap (NOLOAD) :
-	{
-		__heap_start = .;
-		. = RAM_END_ADDRESS;
-		__heap_end = .;
-	}
     _end = .;
 
 	//DEBUG_SYMBOLS

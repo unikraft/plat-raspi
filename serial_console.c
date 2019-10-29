@@ -23,7 +23,7 @@
  *
  */
 
-#include <raspi/gpio.h>
+#include <raspi/sysregs.h>
 #include <raspi/mbox.h>
 #include <raspi/delays.h>
 

@@ -31,7 +31,7 @@
 #if (CONFIG_RASPI_DEBUG_HDMI_CONSOLE || CONFIG_RASPI_KERNEL_HDMI_CONSOLE)
 #include <raspi/hdmi_console.h>
 #endif
-#if (CONFIG_RASPI_DEBUG_SERIAL_CONSOLE || CONFIG_RASPI_KERNEL_SERIAL_CONSOLE)
+#if (CONFIG_RASPI_PRINTF_SERIAL_CONSOLE || CONFIG_RASPI_DEBUG_SERIAL_CONSOLE || CONFIG_RASPI_KERNEL_SERIAL_CONSOLE)
 #include <raspi/serial_console.h>
 #endif
 
@@ -40,7 +40,7 @@ void _libraspiplat_init_console(void)
 #if (CONFIG_RASPI_DEBUG_HDMI_CONSOLE || CONFIG_RASPI_KERNEL_HDMI_CONSOLE)
 	_libraspiplat_init_hdmi_console();
 #endif
-#if (CONFIG_RASPI_DEBUG_SERIAL_CONSOLE || CONFIG_RASPI_KERNEL_SERIAL_CONSOLE)
+#if (CONFIG_RASPI_PRINTF_SERIAL_CONSOLE || CONFIG_RASPI_DEBUG_SERIAL_CONSOLE || CONFIG_RASPI_KERNEL_SERIAL_CONSOLE)
 	_libraspiplat_init_serial_console();
 #endif
 
@@ -49,7 +49,7 @@ void _libraspiplat_init_console(void)
 int ukplat_coutd(const char *buf __maybe_unused, unsigned int len)
 {
 	for (unsigned int i = 0; i < len; i++) {
-#if CONFIG_RASPI_DEBUG_SERIAL_CONSOLE
+#if (CONFIG_RASPI_PRINTF_SERIAL_CONSOLE || CONFIG_RASPI_DEBUG_SERIAL_CONSOLE)
 		_libraspiplat_serial_putc(buf[i]);
 #endif
 #if CONFIG_RASPI_DEBUG_HDMI_CONSOLE
@@ -63,7 +63,7 @@ int ukplat_coutd(const char *buf __maybe_unused, unsigned int len)
 int ukplat_coutk(const char *buf __maybe_unused, unsigned int len)
 {
 	for (unsigned int i = 0; i < len; i++) {
-#if CONFIG_RASPI_KERNEL_SERIAL_CONSOLE
+#if (CONFIG_RASPI_PRINTF_SERIAL_CONSOLE || CONFIG_RASPI_KERNEL_SERIAL_CONSOLE)
 		_libraspiplat_serial_putc(buf[i]);
 #endif
 #if CONFIG_RASPI_KERNEL_HDMI_CONSOLE
@@ -78,7 +78,7 @@ int ukplat_cink(char *buf __maybe_unused, unsigned int maxlen __maybe_unused)
 	int ret __maybe_unused;
 	unsigned int num = 0;
 
-#if CONFIG_RASPI_KERNEL_SERIAL_CONSOLE
+#if (CONFIG_RASPI_PRINTF_SERIAL_CONSOLE || CONFIG_RASPI_KERNEL_SERIAL_CONSOLE)
 	while (num < maxlen
 	       && (ret = _libraspiplat_serial_getc()) >= 0) {
 		*(buf++) = (char) ret;

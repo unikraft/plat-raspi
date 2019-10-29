@@ -23,7 +23,7 @@
  *
  */
 
-#include <raspi/gpio.h>
+#include <raspi/sysregs.h>
 
 /* mailbox message buffer */
 volatile unsigned int  __attribute__((aligned(16))) mbox[36];
