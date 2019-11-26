@@ -111,7 +111,7 @@ vectors_el1:
 	ventry	fiq_invalid_el1t			// FIQ EL1t
 	ventry	error_invalid_el1t			// Error EL1t
 
-	ventry	sync_invalid_el1h			// Synchronous EL1h
+	ventry	el1_sync					// Synchronous EL1h
 	ventry	el1_irq						// IRQ EL1h
 	ventry	fiq_invalid_el1h			// FIQ EL1h
 	ventry	error_invalid_el1h			// Error EL1h
@@ -269,6 +269,14 @@ fiq_invalid_el0_32:
 
 error_invalid_el0_32:
 	handle_invalid_entry  ERROR_INVALID_EL0_32
+
+el1_sync:
+	kernel_entry
+	mrs	x0, ESR_EL1
+	mrs	x1, FAR_EL1
+	bl	show_invalid_entry_message_el1_sync
+	b	err_hang
+	.endm
 
 el1_irq:
 	kernel_entry 

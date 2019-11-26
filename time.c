@@ -38,8 +38,8 @@
 #include <uk/plat/irq.h>
 #include <uk/bitops.h>
 #include <uk/essentials.h>
-#include <cpu.h>
-#include <irq.h>
+#include <uk/plat/common/cpu.h>
+#include <uk/plat/common/irq.h>
 #include <arm/time.h>
 #include <raspi/time.h>
 #include <raspi/irq.h>

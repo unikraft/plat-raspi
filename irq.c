@@ -46,6 +46,11 @@ void show_invalid_entry_message(int type)
 	uk_pr_debug("IRQ: %d\n", type);
 }
 
+void show_invalid_entry_message_el1_sync(uint64_t esr_el, uint64_t far_el)
+{
+	uk_pr_debug("ESR_EL1: %lu, FAR_EL1: %lu\n", esr_el, far_el);
+}
+
 void ukplat_irq_handle(void)
 {
 	__u32 irq_bits = *IRQ_BASIC_PENDING & *ENABLE_BASIC_IRQS;

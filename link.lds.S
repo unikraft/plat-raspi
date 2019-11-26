@@ -23,7 +23,7 @@
  *
  */
 #include <uk/arch/limits.h>
-#include <common.lds.h>
+#include <uk/plat/common/common.lds.h>
 
 #define RAM_BASE_ADDR	0x80000
 #define RAM_END_ADDRESS	0x3E000000
@@ -53,7 +53,7 @@ SECTIONS
 	. = ALIGN(__PAGE_SIZE);
 	_etext = .;
 
-	//EXCEPTION_SECTIONS
+	EXCEPTION_SECTIONS
 
 	CTORTAB_SECTION
 
@@ -118,8 +118,9 @@ SECTIONS
 	. = ALIGN(__PAGE_SIZE);
     _end = .;
 
-	//DEBUG_SYMBOLS
+	.comment       0 : { *(.comment) }
+	DEBUG_SYMBOLS
 
-   /DISCARD/ : { *(.comment) *(.gnu*) *(.note*) *(.eh_frame*) }
+   /DISCARD/ : { *(.gnu*) *(.note*) }
 }
 __bss_size = (__bss_end - __bss_start)>>3;

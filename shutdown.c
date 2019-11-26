@@ -1,7 +1,7 @@
 
 #include <errno.h>
-#include <cpu.h>
-#include <irq.h>
+#include <uk/plat/common/cpu.h>
+#include <uk/plat/common/irq.h>
 #include <uk/plat/bootstrap.h>
 
 static void cpu_halt(void) __noreturn;

@@ -9,8 +9,6 @@ $(eval $(call addplat_s,raspi,$(CONFIG_PLAT_RASPI)))
 $(eval $(call addplatlib,raspi,libraspiplat))
 $(eval $(call addplatlib_s,raspi,libraspilcd,$(RASPI_LCD)))
 $(eval $(call addplatlib_s,raspi,libraspihdmi,$(RASPI_HDMI)))
-$(eval $(call addplatlib_s,raspi,libraspiofw,$(CONFIG_LIBOFW)))
-$(eval $(call addplatlib_s,raspi,libraspigicv2,$(CONFIG_LIBGICV2)))
 
 ##
 ## Platform library definitions
@@ -27,9 +25,7 @@ LIBRASPIPLAT_CXXFLAGS            += -DRASPIPLAT
 
 ##
 ## Default Linker script
-#LIBRASPIPLAT_DEF_LDS            := $(LIBRASPIPLAT_BASE)/link.ld
 UK_PLAT_RASPI_DEF_LDS            := $(LIBRASPIPLAT_BASE)/link.lds.S
-# Was: UK_PLAT_RASPI_DEF_LDS            := $(CONFIG_UK_BASE)/plat/kvm/arm/link64.lds.S
 
 ##
 ## Architecture library definitions
@@ -69,56 +65,3 @@ LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/time.c
 LIBRASPIPLAT_SRCS-y				+= $(UK_PLAT_COMMON_BASE)/lcpu.c|common
 LIBRASPIPLAT_SRCS-y				+= $(UK_PLAT_COMMON_BASE)/memory.c|common
 LIBRASPIPLAT_SRCS-y				+= $(UK_PLAT_RASPI_DEF_LDS)
-
-##
-## Virtio library definitions
-##
-#LIBRASPIVIRTIO_ASINCLUDES-y   += -I$(LIBRASPIPLAT_BASE)/include
-#LIBRASPIVIRTIO_CINCLUDES-y    += -I$(LIBRASPIPLAT_BASE)/include
-LIBRASPIVIRTIO_ASINCLUDES-y   += -I$(UK_PLAT_COMMON_BASE)/include
-LIBRASPIVIRTIO_CINCLUDES-y    += -I$(UK_PLAT_COMMON_BASE)/include
-LIBRASPIVIRTIO_ASINCLUDES-y   += -I$(UK_PLAT_DRIVERS_BASE)/include
-LIBRASPIVIRTIO_CINCLUDES-y    += -I$(UK_PLAT_DRIVERS_BASE)/include
-
-##
-## Virtio Net library definition
-##
-#LIBRASPIVIRTIONET_ASINCLUDES-y   += -I$(LIBRASPIPLAT_BASE)/include
-#LIBRASPIVIRTIONET_CINCLUDES-y    += -I$(LIBRASPIPLAT_BASE)/include
-LIBRASPIVIRTIONET_ASINCLUDES-y   += -I$(UK_PLAT_COMMON_BASE)/include
-LIBRASPIVIRTIONET_CINCLUDES-y    += -I$(UK_PLAT_COMMON_BASE)/include
-LIBRASPIVIRTIONET_ASINCLUDES-y   += -I$(UK_PLAT_DRIVERS_BASE)/include
-LIBRASPIVIRTIONET_CINCLUDES-y    += -I$(UK_PLAT_DRIVERS_BASE)/include
-
-LIBRASPIVIRTIONET_SRCS-y		 += $(UK_PLAT_DRIVERS_BASE)/virtio/virtio_net.c
-
-##
-## Virtio 9P library definition
-##
-#LIBRASPIVIRTIO9P_ASINCLUDES-y   += -I$(LIBRASPIPLAT_BASE)/include
-#LIBRASPIVIRTIO9P_CINCLUDES-y    += -I$(LIBRASPIPLAT_BASE)/include
-LIBRASPIVIRTIO9P_ASINCLUDES-y   += -I$(UK_PLAT_COMMON_BASE)/include
-LIBRASPIVIRTIO9P_CINCLUDES-y    += -I$(UK_PLAT_COMMON_BASE)/include
-LIBRASPIVIRTIO9P_ASINCLUDES-y   += -I$(UK_PLAT_DRIVERS_BASE)/include
-LIBRASPIVIRTIO9P_CINCLUDES-y    += -I$(UK_PLAT_DRIVERS_BASE)/include
-
-LIBRASPIVIRTIO9P_SRCS-y			+= $(UK_PLAT_DRIVERS_BASE)/virtio/virtio_9p.c
-
-##
-## OFW library definitions
-##
-#LIBRASPIOFW_CINCLUDES-y         += -I$(LIBRASPIPLAT_BASE)/include
-LIBRASPIOFW_CINCLUDES-y         += -I$(UK_PLAT_COMMON_BASE)/include
-LIBRASPIOFW_CINCLUDES-y         += -I$(UK_PLAT_DRIVERS_BASE)/include
-
-LIBRASPIOFW_SRCS-y                  += $(UK_PLAT_DRIVERS_BASE)/ofw/fdt.c
-LIBRASPIOFW_SRCS-$(CONFIG_LIBGICV2) += $(UK_PLAT_DRIVERS_BASE)/ofw/gic_fdt.c
-
-##
-## GICv2 library definitions
-##
-#LIBRASPIGICV2_CINCLUDES-y         += -I$(LIBRASPIPLAT_BASE)/include
-LIBRASPIGICV2_CINCLUDES-y         += -I$(UK_PLAT_COMMON_BASE)/include
-LIBRASPIGICV2_CINCLUDES-y         += -I$(UK_PLAT_DRIVERS_BASE)/include
-
-LIBRASPIGICV2_SRCS-y			  += $(UK_PLAT_DRIVERS_BASE)/gic/gic-v2.c

@@ -1,6 +1,6 @@
 
 #include <uk/plat/memory.h>
-#include <sections.h>
+#include <uk/plat/common/sections.h>
 #include <uk/essentials.h>
 #include <raspi/sysregs.h>
 

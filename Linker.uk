@@ -1,4 +1,7 @@
 RASPI_LDFLAGS-y	 += -Wl,-m,aarch64elf
+ifeq ($(CONFIG_ARM64_ERRATUM_843419),y)
+RASPI_LDFLAGS-y	+= -mfix-cortex-a53-843419
+endif
 
 
 ##
