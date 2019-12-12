@@ -17,14 +17,3 @@ enable_irq:
 disable_irq:
 	msr	daifset, #2
 	ret
-
-.globl get_el
-get_el:
-    mrs x0, CurrentEL
-    lsr x0, x0, #2
-    ret
-
-.globl get_spsel
-get_spsel:
-    mrs x0, SPSel
-    ret

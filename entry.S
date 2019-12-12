@@ -1,4 +1,4 @@
-#include "raspi/entry.h"
+#include <raspi/entry.h>
 
 	.macro handle_invalid_entry type
 	kernel_entry
@@ -276,7 +276,6 @@ el1_sync:
 	mrs	x1, FAR_EL1
 	bl	show_invalid_entry_message_el1_sync
 	b	err_hang
-	.endm
 
 el1_irq:
 	kernel_entry 

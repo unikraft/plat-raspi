@@ -61,15 +61,11 @@ config RASPI_HDMI
        depends on ARCH_ARM_64
 endmenu
 
-config LIBGICV2
-       bool "Arm GIC (generic interrupt controller) v2 library support"
+menu "Profiling"
+config RASPI_WATERMARK_STACK
+       bool "Watermark Stack"
        default n
-       select LIBOFW
        depends on ARCH_ARM_64
-
-config LIBOFW
-       bool "Open Firmware library support"
-       default n
-       select LIBFDT
+endmenu
 
 endif

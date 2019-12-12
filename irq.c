@@ -4,6 +4,7 @@
 #include <uk/essentials.h>
 #include <raspi/irq.h>
 #include <raspi/time.h>
+#include <raspi/raspi_info.h>
 #include <arm/time.h>
 
 static irq_handler_func_t irq_handlers[IRQS_MAX];
@@ -48,7 +49,7 @@ void show_invalid_entry_message(int type)
 
 void show_invalid_entry_message_el1_sync(uint64_t esr_el, uint64_t far_el)
 {
-	uk_pr_debug("ESR_EL1: %lu, FAR_EL1: %lu\n", esr_el, far_el);
+	uk_pr_debug("ESR_EL1: %lx, FAR_EL1: %lx, SCTLR_EL1:%lx\n", esr_el, far_el, get_sctlr_el1());
 }
 
 void ukplat_irq_handle(void)

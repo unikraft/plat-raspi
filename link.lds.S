@@ -26,7 +26,7 @@
 #include <uk/plat/common/common.lds.h>
 
 #define RAM_BASE_ADDR	0x80000
-#define RAM_END_ADDRESS	0x3E000000
+//#define RAM_BASE_ADDR	0xFFFF000000080000
 
 OUTPUT_FORMAT("elf64-littleaarch64")
 OUTPUT_ARCH(aarch64)
@@ -49,10 +49,9 @@ SECTIONS
 		*(.text.*)
 		*(.gnu.linkonce.t*)
 	}
-
-	. = ALIGN(__PAGE_SIZE);
 	_etext = .;
 
+	. = ALIGN(__PAGE_SIZE);
 	EXCEPTION_SECTIONS
 
 	CTORTAB_SECTION
@@ -68,7 +67,6 @@ SECTIONS
 		*(.rodata.*)
 		*(.gnu.linkonce.r*)
 	}
-
 	_erodata = .;
 
 	/* Constructor tables (read-only) */
@@ -88,8 +86,8 @@ SECTIONS
 		PROVIDE_HIDDEN (__init_array_end = .);
 	}
 	_ectors = .;
-	. = ALIGN(__PAGE_SIZE);
 
+	. = ALIGN(__PAGE_SIZE);
 	TLS_SECTIONS
 
 	/* Read-write data that is initialized explicitly in code */
@@ -100,24 +98,39 @@ SECTIONS
 		*(.data.*)
 		*(.gnu.linkonce.d*)
 	}
-
 	_edata = .;
-	. = ALIGN(__PAGE_SIZE);
 
 	/* Read-write data that is not initialized explicitly in code */
+	. = ALIGN(__PAGE_SIZE);
+	__bss_start = .;
     .bss (NOLOAD) :
 	{
-        . = ALIGN(16);
-        __bss_start = .;
 		*(.bss)
 		*(.bss.*)
         *(COMMON)
-        __bss_end = .;
     }
+	__bss_end = .;
+
+	/* From https://github.com/s-matyukevich/raspberry-pi-os/blob/master/docs/lesson06/rpi-os.md:
+	 * We need just one PGD and one PUD to map the whole RPi memory, and both PGD and PUD will contain a single descriptor.
+	 * If we have a single PUD entry there also must be a single PMD table, to which this entry will point.
+	 * Single PMD entry covers 2 MB, there are 512 items in a PMD, so in total the whole PMD table covers the same 1 GB of
+	 * memory that is covered by a single PUD descriptor.
+	 * We need to map 1 GB region of memory, which is a multiple of 2 MB, therefore we can use section mapping, and hence we
+	 * don't need PTE at all.
+	 * Finally, that means we need three 4 kB pages for the page tables: one for PGD, PUD and PMD.
+	 */
+	. = ALIGN(__PAGE_SIZE);
+	_pagetables = .;
+	.pagetables (NOLOAD) :
+	{
+		. += 3 * __PAGE_SIZE;
+	}
+
+	_end = .;
+	
 
 	. = ALIGN(__PAGE_SIZE);
-    _end = .;
-
 	.comment       0 : { *(.comment) }
 	DEBUG_SYMBOLS
 

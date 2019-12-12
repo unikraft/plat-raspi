@@ -51,7 +51,7 @@ static __u32 timer_irq_delay;
 void generic_timer_mask_irq(void)
 {
 	set_el0(cntv_ctl, get_el0(cntv_ctl) | GT_TIMER_MASK_IRQ);
-	*RASPI_ARM_C0_TIMER_IRQ_CTL = *RASPI_ARM_C0_TIMER_IRQ_CTL & ~RASPI_ARM_C0_TIMER_IRQ_CTL_CNTVIRQ_BIT;
+	//*RASPI_ARM_C0_TIMER_IRQ_CTL = *RASPI_ARM_C0_TIMER_IRQ_CTL & ~RASPI_ARM_C0_TIMER_IRQ_CTL_CNTVIRQ_BIT;
 
 	/* Ensure the write of sys register is visible */
 	isb();
@@ -60,7 +60,7 @@ void generic_timer_mask_irq(void)
 void generic_timer_unmask_irq(void)
 {
 	set_el0(cntv_ctl, get_el0(cntv_ctl) & ~GT_TIMER_MASK_IRQ);
-	*RASPI_ARM_C0_TIMER_IRQ_CTL = *RASPI_ARM_C0_TIMER_IRQ_CTL | RASPI_ARM_C0_TIMER_IRQ_CTL_CNTVIRQ_BIT;
+	//*RASPI_ARM_C0_TIMER_IRQ_CTL = *RASPI_ARM_C0_TIMER_IRQ_CTL | RASPI_ARM_C0_TIMER_IRQ_CTL_CNTVIRQ_BIT;
 
 	/* Ensure the write of sys register is visible */
 	isb();

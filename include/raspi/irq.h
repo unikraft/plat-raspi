@@ -2,7 +2,7 @@
 #ifndef __RASPI_IRQ_H__
 #define __RASPI_IRQ_H__
 
-#include "sysregs.h"
+#include <raspi/sysregs.h>
 
 #define IRQ_BASIC_PENDING	((volatile __u32 *)(MMIO_BASE+0x0000B200))
 #define IRQ_PENDING_1		((volatile __u32 *)(MMIO_BASE+0x0000B204))
@@ -30,7 +30,5 @@
 void irq_vector_init( void );
 void enable_irq( void );
 void disable_irq( void );
-int get_el ( void );
-int get_spsel ( void );
 
 #endif /* __RASPI_IRQ_H__ */

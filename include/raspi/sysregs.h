@@ -1,8 +1,9 @@
 #ifndef _SYSREGS_H
 #define _SYSREGS_H
 
-
-#define MMIO_BASE       (0x3F000000)
+#define DEVICE_BASE		(0x3F000000)
+//#define MMIO_BASE		(0xFFFF000000000000 + DEVICE_BASE)
+#define MMIO_BASE		(DEVICE_BASE)
 
 #define GPFSEL0         ((volatile unsigned int*)(MMIO_BASE+0x00200000))
 #define GPFSEL1         ((volatile unsigned int*)(MMIO_BASE+0x00200004))
@@ -38,10 +39,11 @@
 //#define SCTLR_EL1_I_CACHE_DISABLED          (0 << 12)
 //#define SCTLR_EL1_D_CACHE_DISABLED          (0 << 2)
 //#define SCTLR_EL1_MMU_DISABLED              (0 << 0)
-//#define SCTLR_EL1_MMU_ENABLED               (1 << 0)
+#define SCTLR_EL1_MMU_ENABLED               (1 << 0)
 
 //#define SCTLR_VALUE_MMU_DISABLED	(SCTLR_RESERVED | SCTLR_EE_LITTLE_ENDIAN | SCTLR_I_CACHE_DISABLED | SCTLR_D_CACHE_DISABLED | SCTLR_MMU_DISABLED)
-#define SCTLR_EL1_VALUE				(SCTLR_EL1_WFE_NORMAL | SCTLR_EL1_WFI_NORMAL)
+#define SCTLR_EL1_VALUE_MMU_DISABLED	(SCTLR_EL1_WFE_NORMAL | SCTLR_EL1_WFI_NORMAL)
+#define SCTLR_EL1_VALUE_MMU_ENABLED		(SCTLR_EL1_WFE_NORMAL | SCTLR_EL1_WFI_NORMAL | SCTLR_EL1_MMU_ENABLED)
 #define SCTLR_EL2_VALUE				(0)
 
 // ***************************************
@@ -51,8 +53,8 @@
 #define HCR_EL2_RW	    			(1 << 31)
 #define HCR_EL2_IMO	    			(1 << 4)
 #define HCR_EL2_SWIO	    		(1 << 1)
-//#define HCR_EL2_VALUE				(HCR_EL2_RW | HCR_EL2_SWIO | HCR_EL2_SWIO)
-#define HCR_EL2_VALUE				(HCR_EL2_RW | HCR_EL2_SWIO)
+//#define HCR_EL2_VALUE				(HCR_EL2_RW | HCR_EL2_SWIO)
+#define HCR_EL2_VALUE				(HCR_EL2_RW)
 
 // ***************************************
 // SCR_EL3, Secure Configuration Register (EL3), Page 2648 of AArch64-Reference-Manual.
