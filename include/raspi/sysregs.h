@@ -60,6 +60,16 @@
 // SCR_EL3, Secure Configuration Register (EL3), Page 2648 of AArch64-Reference-Manual.
 // ***************************************
 
+#define CPACR_EL1_TTA					(1 << 28)
+#define CPACR_EL1_FPEN_TRAP_EL0_EL1  	(0 << 20)
+#define CPACR_EL1_FPEN_TRAP_EL0		  	(1 << 20)
+#define CPACR_EL1_FPEN_TRAP_NONE	  	(3 << 20)
+#define CPACR_EL1_VALUE					(CPACR_EL1_FPEN_TRAP_NONE)
+
+// ***************************************
+// CPACR_EL1, Architectural Feature Access Control Register.
+// ***************************************
+
 #define SCR_RESERVED	    		(3 << 4)
 #define SCR_RW				(1 << 10)
 #define SCR_NS				(1 << 0)

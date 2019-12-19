@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2018 bzt (bztsrc@github)
+ * Copyright (c) 2018 Sergey Matyukevich
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -53,6 +54,10 @@ master:
 
 	ldr		x0, =SCTLR_EL2_VALUE
 	msr		sctlr_el2, x0
+
+// Disable coprocessor traps
+	ldr		x0, =CPACR_EL1_VALUE
+	msr		cpacr_el1, x0
 
 	ldr		x0, =HCR_EL2_VALUE
 	msr		hcr_el2, x0

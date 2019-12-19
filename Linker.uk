@@ -22,6 +22,7 @@ $(RASPI_ELF_IMAGE): $(RASPI_ALIBS) $(RASPI_ALIBS-y) $(RASPI_OLIBS) $(RASPI_OLIBS
 			$(RASPI_LDFLAGS) $(RASPI_LDFLAGS-y) \
 			$(RASPI_OLIBS) $(RASPI_OLIBS-y) \
 			$(UK_OLIBS) $(UK_OLIBS-y) \
+			-lgcc \
 			-Wl$(comma)--start-group \
 			$(RASPI_ALIBS) $(RASPI_ALIBS-y) \
 			$(UK_ALIBS) $(UK_ALIBS-y) \
