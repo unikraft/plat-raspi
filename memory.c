@@ -81,7 +81,7 @@ int ukplat_memregion_get(int i, struct ukplat_memregion_desc *m)
 		break;
 	case 6: /* heap */
 		m->base  = (void *) __END;
-		m->len   = (size_t) (MMIO_BASE - 1) - (size_t) __END;
+		m->len   = (size_t) (MMIO_BASE/2 - 1) - (size_t) __END;
 		m->flags = UKPLAT_MEMRF_ALLOCATABLE;
 #if CONFIG_UKPLAT_MEMRNAME
 		m->name  = "heap";

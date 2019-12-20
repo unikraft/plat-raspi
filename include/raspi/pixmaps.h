@@ -98,6 +98,13 @@
 #include <raspi/pixmaps/letter_tilde.h>
 
 
+#define LGVL_HEADER_PIXEL(data,pixel) {\
+pixel[2] = data[1]; \
+pixel[1] = data[2]; \
+pixel[0] = data[3]; \
+data += 4; \
+}
+
 #define HEADER_PIXEL(data,pixel) {\
 pixel[2] = (((data[0] - 33) << 2) | ((data[1] - 33) >> 4)); \
 pixel[1] = ((((data[1] - 33) & 0xF) << 4) | ((data[2] - 33) >> 2)); \

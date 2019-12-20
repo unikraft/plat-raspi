@@ -34,6 +34,36 @@
 unsigned int width, height, pitch;
 unsigned char *lfb;
 
+
+#define LV_CONF_INCLUDE_SIMPLE
+#include <lvgl.h>
+static lv_disp_buf_t lv_disp_buf;
+static lv_color_t lv_color_buf[SCREEN_WIDTH * 10];
+
+static lv_disp_drv_t disp_drv;
+
+void my_lv_disp_flush(lv_disp_drv_t * disp, const lv_area_t * area, lv_color_t * color_p)
+{
+	unsigned char *ptr=lfb;
+    char pixel[PIXEL_MEM_SIZE];
+	char *data = color_p;
+	int16_t area_width = area->x2 - area->x1 + 1;
+
+	ptr += area->y1*pitch + area->x1*PIXEL_MEM_SIZE;
+
+	int16_t x, y;
+	for (y = area->y1; y <= area->y2; y++) {
+		for (x = area->x1; x <= area->x2; x++) {
+			LGVL_HEADER_PIXEL(data, pixel);
+            *((unsigned int*)ptr)=*((unsigned int *)&pixel);
+            ptr+=PIXEL_MEM_SIZE;
+		}
+		ptr+=pitch-area_width*PIXEL_MEM_SIZE;
+	}
+	
+	lv_disp_flush_ready(disp);
+}
+
 /**
  * Set screen resolution to 800x480
  */
@@ -190,6 +220,15 @@ void lfb_init()
 	letters_data [0x7D - LETTER_MIN] = (char *)letter_curly_braces_right_data;	// 0x7D
 	letters_data [0x7E - LETTER_MIN] = (char *)letter_similar_data;	// 0x7E
 	letters_data [0x7F - LETTER_MIN] = (char *)letter_space_data;	// 0x7F
+
+	lv_init();
+
+	lv_disp_buf_init(&lv_disp_buf, lv_color_buf, NULL, SCREEN_WIDTH * 10);
+
+	lv_disp_drv_init(&disp_drv);
+	disp_drv.flush_cb = my_lv_disp_flush;
+	disp_drv.buffer = &lv_disp_buf;
+	lv_disp_drv_register(&disp_drv);
 }
 
 /**
