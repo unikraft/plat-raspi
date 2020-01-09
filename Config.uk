@@ -1,0 +1,52 @@
+menuconfig PLAT_RASPI
+       bool "Raspberry Pi 3B+"
+       default n
+       depends on ARCH_ARM_64
+       help
+          Create a Unikraft image that runs as a Raspberry Pi 3B+
+
+if (PLAT_RASPI)
+
+menu "Console Options"
+config RASPI_PRINTF_SERIAL_CONSOLE
+        bool "Serial console for printf"
+        default y
+        depends on ARCH_ARM_64
+        help
+          Choose serial console for printf
+
+config RASPI_KERNEL_SERIAL_CONSOLE
+        bool "Serial console for the kernel prints"
+        default n
+        depends on ARCH_ARM_64
+        help
+          Choose serial console for the kernel printing
+
+config RASPI_DEBUG_SERIAL_CONSOLE
+        bool "Serial console for the debug prints"
+        default n
+        depends on ARCH_ARM_64
+        help
+          Choose serial console for the debug printing
+endmenu
+
+menu "Devices"
+config RASPI_LCD
+       bool "DSI LCD screen"
+       default n
+       depends on ARCH_ARM_64
+
+config RASPI_TOUCHSCREEN
+       bool "Touch screen"
+       default n
+       depends on ARCH_ARM_64
+endmenu
+
+menu "Profiling"
+config RASPI_WATERMARK_STACK
+       bool "Watermark Stack"
+       default n
+       depends on ARCH_ARM_64
+endmenu
+
+endif

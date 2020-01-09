@@ -1,0 +1,72 @@
+##
+## RASPI platform registration
+##
+$(eval $(call addplat_s,raspi,$(CONFIG_PLAT_RASPI)))
+
+##
+## RASPI platform library registration
+##
+$(eval $(call addplatlib,raspi,libraspiplat))
+$(eval $(call addplatlib_s,raspi,libraspilcd,$(RASPI_LCD)))
+$(eval $(call addplatlib_s,raspi,libraspitouchscreen,$(RASPI_TOUCHSCREEN)))
+
+##
+## Platform library definitions
+##
+LIBRASPIPLAT_ASINCLUDES-y        += -I$(LIBRASPIPLAT_BASE)/include
+LIBRASPIPLAT_ASINCLUDES-y        += -I$(UK_PLAT_COMMON_BASE)/include
+LIBRASPIPLAT_CINCLUDES-y         += -I$(LIBRASPIPLAT_BASE)/include
+LIBRASPIPLAT_CINCLUDES-y         += -I$(UK_PLAT_COMMON_BASE)/include
+LIBRASPIPLAT_CINCLUDES-y         += -I$(UK_PLAT_DRIVERS_BASE)/include
+
+LIBRASPIPLAT_ASFLAGS             += -DRASPIPLAT
+LIBRASPIPLAT_CFLAGS              += -DRASPIPLAT
+LIBRASPIPLAT_CXXFLAGS            += -DRASPIPLAT
+
+##
+## Default Linker script
+UK_PLAT_RASPI_DEF_LDS            := $(LIBRASPIPLAT_BASE)/link.lds.S
+
+##
+## Architecture library definitions
+##
+ifeq ($(findstring y,$(CONFIG_RASPI_PRINTF_SERIAL_CONSOLE) $(CONFIG_RASPI_KERNEL_SERIAL_CONSOLE) $(CONFIG_RASPI_DEBUG_SERIAL_CONSOLE)),y)
+## TODO: Check if both implementations are actually doing the same thing
+#LIBRASPIPLAT_SRCS-$(CONFIG_ARCH_ARM_64) += $(UK_PLAT_COMMON_BASE)/arm/pl011.c|common
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/serial_console.c
+endif
+LIBRASPIPLAT_SRCS-$(CONFIG_ARCH_ARM_64) += $(UK_PLAT_COMMON_BASE)/arm/cpu_native.c|common
+#LIBRASPIPLAT_SRCS-$(CONFIG_ARCH_ARM_64) += $(UK_PLAT_COMMON_BASE)/arm/cache64.S|common
+#LIBRASPIPLAT_SRCS-$(CONFIG_ARCH_ARM_64) += $(UK_PLAT_COMMON_BASE)/arm/psci_arm64.S|common
+LIBRASPIPLAT_SRCS-$(CONFIG_ARCH_ARM_64) += $(UK_PLAT_COMMON_BASE)/arm/generic_timer.c|common
+#LIBRASPIPLAT_SRCS-$(CONFIG_ARCH_ARM_64) += $(UK_PLAT_COMMON_BASE)/arm/traps.c|common
+ifeq ($(CONFIG_HAVE_SCHED),y)
+LIBRASPIPLAT_SRCS-$(CONFIG_ARCH_ARM_64) += $(UK_PLAT_COMMON_BASE)/arm/thread_start64.S|common
+LIBRASPIPLAT_SRCS-y += $(UK_PLAT_COMMON_BASE)/thread.c|common
+LIBRASPIPLAT_SRCS-y += $(UK_PLAT_COMMON_BASE)/sw_ctx.c|common
+endif
+
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/start.S
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/irq_asm.S
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/raspi_info_asm.S
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/raspi_info.c
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/entry.S
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/mm.S
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/console.c
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/io.c
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/irq.c
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/lcpu.c
+ifeq ($(findstring y,$(CONFIG_RASPI_LCD) $(CONFIG_RASPI_LCD)),y)
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/lfb.c
+endif
+ifeq ($(findstring y,$(CONFIG_RASPI_TOUCHSCREEN) $(CONFIG_RASPI_TOUCHSCREEN)),y)
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/touchscreen.c
+endif
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/mbox.c
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/memory.c
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/setup.c
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/shutdown.c
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/time.c
+LIBRASPIPLAT_SRCS-y				+= $(UK_PLAT_COMMON_BASE)/lcpu.c|common
+LIBRASPIPLAT_SRCS-y				+= $(UK_PLAT_COMMON_BASE)/memory.c|common
+LIBRASPIPLAT_SRCS-y				+= $(UK_PLAT_RASPI_DEF_LDS)
