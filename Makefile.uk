@@ -8,7 +8,7 @@ $(eval $(call addplat_s,raspi,$(CONFIG_PLAT_RASPI)))
 ##
 $(eval $(call addplatlib,raspi,libraspiplat))
 $(eval $(call addplatlib_s,raspi,libraspilcd,$(RASPI_LCD)))
-$(eval $(call addplatlib_s,raspi,libraspihdmi,$(RASPI_HDMI)))
+$(eval $(call addplatlib_s,raspi,libraspitouchscreen,$(RASPI_TOUCHSCREEN)))
 
 ##
 ## Platform library definitions
@@ -48,16 +48,19 @@ endif
 
 LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/start.S
 LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/irq_asm.S
-LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/regs_asm.S
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/raspi_info_asm.S
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/raspi_info.c
 LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/entry.S
 LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/mm.S
 LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/console.c
-LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/delays.c
 LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/io.c
 LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/irq.c
 LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/lcpu.c
 ifeq ($(findstring y,$(CONFIG_RASPI_LCD) $(CONFIG_RASPI_LCD)),y)
 LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/lfb.c
+endif
+ifeq ($(findstring y,$(CONFIG_RASPI_TOUCHSCREEN) $(CONFIG_RASPI_TOUCHSCREEN)),y)
+LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/touchscreen.c
 endif
 LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/mbox.c
 LIBRASPIPLAT_SRCS-y				+= $(LIBRASPIPLAT_BASE)/memory.c

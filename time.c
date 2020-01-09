@@ -1,8 +1,9 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Authors: Wei Chen <Wei.Chen@arm.com>
+ * Authors: Santiago Pagani <santiagopagani@gmail.com>
  *
- * Copyright (c) 2018, Arm Ltd. All rights reserved.
+ * Copyright (c) 2020, NEC Laboratories Europe GmbH, NEC Corporation.
+ *                     All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,6 +32,7 @@
  *
  * THIS HEADER MAY NOT BE EXTRACTED OR MODIFIED IN ANY WAY.
  */
+
 #include <stdlib.h>
 #include <uk/assert.h>
 #include <uk/plat/time.h>
@@ -46,12 +48,11 @@
 
 #define RASPI_ARM_SIDE_TIMER_LOAD_INIT	(0x00FFFFFF)
 
-static __u32 timer_irq_delay;
+static uint32_t timer_irq_delay;
 
 void generic_timer_mask_irq(void)
 {
 	set_el0(cntv_ctl, get_el0(cntv_ctl) | GT_TIMER_MASK_IRQ);
-	//*RASPI_ARM_C0_TIMER_IRQ_CTL = *RASPI_ARM_C0_TIMER_IRQ_CTL & ~RASPI_ARM_C0_TIMER_IRQ_CTL_CNTVIRQ_BIT;
 
 	/* Ensure the write of sys register is visible */
 	isb();
@@ -60,7 +61,6 @@ void generic_timer_mask_irq(void)
 void generic_timer_unmask_irq(void)
 {
 	set_el0(cntv_ctl, get_el0(cntv_ctl) & ~GT_TIMER_MASK_IRQ);
-	//*RASPI_ARM_C0_TIMER_IRQ_CTL = *RASPI_ARM_C0_TIMER_IRQ_CTL | RASPI_ARM_C0_TIMER_IRQ_CTL_CNTVIRQ_BIT;
 
 	/* Ensure the write of sys register is visible */
 	isb();
@@ -119,8 +119,8 @@ static void raspi_arm_side_timer_init(void)
 
 static int handle_raspi_side_timer_irq(void *arg __unused)
 {
-	__u64 timerValue1 = raspi_arm_side_timer_get_value();
-	__u64 timerValue2 = raspi_arm_side_timer_get_value();
+	uint64_t timerValue1 = raspi_arm_side_timer_get_value();
+	uint64_t timerValue2 = raspi_arm_side_timer_get_value();
 	raspi_arm_side_timer_irq_disable();
 	raspi_arm_side_timer_irq_clear();
 
@@ -129,7 +129,6 @@ static int handle_raspi_side_timer_irq(void *arg __unused)
 	// and also substract the difference beween the two points
 	timer_irq_delay = (raspi_arm_side_timer_get_load() - timerValue1) - (timerValue1 - timerValue2);
 
-	//raspi_arm_side_timer_irq_enable();
 	return 1;
 }
 
@@ -144,13 +143,12 @@ void raspi_irq_delay_measurements_init(void)
 		UK_CRASH("Failed to register timer interrupt handler\n");
 }
 
-
 /**
  * Get System Timer's counter
  */
-__u64 get_system_timer(void)
+uint64_t get_system_timer(void)
 {
-	__u32 h, l;
+	uint32_t h, l;
 	// we must read MMIO area as two separate 32 bit reads
 	h = *RASPI_SYS_TIMER_CHI;
 	l = *RASPI_SYS_TIMER_CLO;
@@ -161,10 +159,10 @@ __u64 get_system_timer(void)
 		l = *RASPI_SYS_TIMER_CLO;
 	}
 	// compose long int value
-	return ((__u64)h << 32) | l;
+	return ((uint64_t)h << 32) | l;
 }
 
-__u32 get_timer_irq_delay(void)
+uint32_t get_timer_irq_delay(void)
 {
 	return timer_irq_delay;
 }
@@ -173,4 +171,3 @@ void reset_timer_irq_delay(void)
 {
 	timer_irq_delay = 0;
 }
-

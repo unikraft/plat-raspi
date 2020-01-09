@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2018 bzt (bztsrc@github)
+ *               https://github.com/bztsrc/raspi3-tutorial
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -23,10 +24,16 @@
  *
  */
 
-#define LFB_LIB_SIZE_BYTES	(1708072)
+#ifndef __RASPI_LFB_H__
+#define __RASPI_LFB_H__
 
-void lfb_init();
-void lfb_show_unikraft_logo();
+#define LFB_LIB_SIZE_BYTES	(1708040)
+
+void lfb_init(void);
+
+void lfb_show_unikraft_logo(void);
 void lfb_show_letter(unsigned int x_pos, unsigned y_pos, char letter);
 void lfb_show_string(unsigned int x_pos, unsigned y_pos, char *str);
 void lfb_show_string_u(unsigned int x_pos, unsigned y_pos, char *str, unsigned int value);
+
+#endif /* __RASPI_LFB_H__ */

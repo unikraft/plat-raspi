@@ -1,8 +1,11 @@
 /* SPDX-License-Identifier: ISC */
 /*
  * Authors: Dafna Hirschfeld <dafna3@gmail.com>
+ *          Santiago Pagani <santiagopagani@gmail.com>
  *
  * Copyright (c) 2018 Dafna Hirschfeld <dafna3@gmail.com>
+ * Copyright (c) 2020, NEC Laboratories Europe GmbH, NEC Corporation.
+ *                     All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software
  * for any purpose with or without fee is hereby granted, provided
@@ -19,19 +22,11 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef __RASPI_SERIAL_CONSOLE__
-#define __RASPI_SERIAL_CONSOLE__
+#ifndef __RASPI_SERIAL_CONSOLE_H__
+#define __RASPI_SERIAL_CONSOLE_H__
 
 void _libraspiplat_init_serial_console(void);
 void _libraspiplat_serial_putc(char a);
 int  _libraspiplat_serial_getc(void);
 
-unsigned int serial_tx_buffer_full(void);
-unsigned int serial_rx_buffer_empty(void);
-
-void serial_console_send_string(char *str);
-void serial_console_send_string_i(char *str, int value);
-void serial_console_send_string_u(char *str, unsigned int value);
-void serial_console_send_string_lu(char *str, unsigned long value);
-
-#endif /* __RASPI_SERIAL_CONSOLE__ */
+#endif /* __RASPI_SERIAL_CONSOLE_H__ */

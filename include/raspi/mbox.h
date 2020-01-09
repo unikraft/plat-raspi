@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2018 bzt (bztsrc@github)
+ *               https://github.com/bztsrc/raspi3-tutorial
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -23,12 +24,16 @@
  *
  */
 
-/* a properly aligned buffer */
-extern volatile unsigned int mbox[36];
+#ifndef __RASPI_MBOX_H__
+#define __RASPI_MBOX_H__
+
+/* A properly aligned buffer */
+#define MBOX_BUFFER_LENGTH	36
+extern volatile unsigned int mbox[MBOX_BUFFER_LENGTH];
 
 #define MBOX_REQUEST    0
 
-/* channels */
+/* Channels */
 #define MBOX_CH_POWER   0
 #define MBOX_CH_FB      1
 #define MBOX_CH_VUART   2
@@ -39,9 +44,10 @@ extern volatile unsigned int mbox[36];
 #define MBOX_CH_COUNT   7
 #define MBOX_CH_PROP    8
 
-/* tags */
+/* Tags */
 #define MBOX_TAG_SETPOWER       0x28001
 #define MBOX_TAG_SETCLKRATE     0x38002
 #define MBOX_TAG_LAST           0
 
 int mbox_call(unsigned char ch);
+#endif /* __RASPI_MBOX_H__ */

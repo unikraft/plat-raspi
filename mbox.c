@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2018 bzt (bztsrc@github)
+ *               https://github.com/bztsrc/raspi3-tutorial
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -23,10 +24,11 @@
  *
  */
 
+#include <raspi/mbox.h>
 #include <raspi/sysregs.h>
 
 /* mailbox message buffer */
-volatile unsigned int  __attribute__((aligned(16))) mbox[36];
+volatile unsigned int  __attribute__((aligned(16))) mbox[MBOX_BUFFER_LENGTH];
 
 #define VIDEOCORE_MBOX  (MMIO_BASE+0x0000B880)
 #define MBOX_READ       ((volatile unsigned int*)(VIDEOCORE_MBOX+0x0))

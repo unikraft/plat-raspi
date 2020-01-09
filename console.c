@@ -5,10 +5,12 @@
  *          Felipe Huici <felipe.huici@neclab.eu>
  *          Florian Schmidt <florian.schmidt@neclab.eu>
  *          Simon Kuenzer <simon.kuenzer@neclab.eu>
+ *          Santiago Pagani <santiagopagani@gmail.com>
  *
  * Copyright (c) 2015-2017 IBM
  * Copyright (c) 2016-2017 Docker, Inc.
- * Copyright (c) 2017 NEC Europe Ltd., NEC Corporation
+ * Copyright (c) 2020, NEC Laboratories Europe GmbH, NEC Corporation.
+ *                     All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software
  * for any purpose with or without fee is hereby granted, provided
@@ -28,22 +30,15 @@
 #include <uk/plat/console.h>
 #include <uk/config.h>
 #include <uk/essentials.h>
-#if (CONFIG_RASPI_DEBUG_HDMI_CONSOLE || CONFIG_RASPI_KERNEL_HDMI_CONSOLE)
-#include <raspi/hdmi_console.h>
-#endif
 #if (CONFIG_RASPI_PRINTF_SERIAL_CONSOLE || CONFIG_RASPI_DEBUG_SERIAL_CONSOLE || CONFIG_RASPI_KERNEL_SERIAL_CONSOLE)
 #include <raspi/serial_console.h>
 #endif
 
 void _libraspiplat_init_console(void)
 {
-#if (CONFIG_RASPI_DEBUG_HDMI_CONSOLE || CONFIG_RASPI_KERNEL_HDMI_CONSOLE)
-	_libraspiplat_init_hdmi_console();
-#endif
 #if (CONFIG_RASPI_PRINTF_SERIAL_CONSOLE || CONFIG_RASPI_DEBUG_SERIAL_CONSOLE || CONFIG_RASPI_KERNEL_SERIAL_CONSOLE)
 	_libraspiplat_init_serial_console();
 #endif
-
 }
 
 int ukplat_coutd(const char *buf __maybe_unused, unsigned int len)
@@ -52,22 +47,15 @@ int ukplat_coutd(const char *buf __maybe_unused, unsigned int len)
 #if (CONFIG_RASPI_PRINTF_SERIAL_CONSOLE || CONFIG_RASPI_DEBUG_SERIAL_CONSOLE)
 		_libraspiplat_serial_putc(buf[i]);
 #endif
-#if CONFIG_RASPI_DEBUG_HDMI_CONSOLE
-		_libraspiplat_hdmi_putc(buf[i]);
-#endif
 	}
 	return len;
 }
-
 
 int ukplat_coutk(const char *buf __maybe_unused, unsigned int len)
 {
 	for (unsigned int i = 0; i < len; i++) {
 #if (CONFIG_RASPI_PRINTF_SERIAL_CONSOLE || CONFIG_RASPI_KERNEL_SERIAL_CONSOLE)
 		_libraspiplat_serial_putc(buf[i]);
-#endif
-#if CONFIG_RASPI_KERNEL_HDMI_CONSOLE
-		_libraspiplat_hdmi_putc(buf[i]);
 #endif
 	}
 	return len;

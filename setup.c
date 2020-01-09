@@ -1,9 +1,9 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Authors: Santiago Pagani <santiago.pagani@neclab.eu>
+ * Authors: Santiago Pagani <santiagopagani@gmail.com>
  *
- *
- * Copyright (c) 2017, NEC Europe Ltd., NEC Corporation. All rights reserved.
+ * Copyright (c) 2020, NEC Laboratories Europe GmbH, NEC Corporation.
+ *                     All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -39,28 +39,30 @@
 #if CONFIG_RASPI_LCD
 	#include <raspi/lfb.h>
 #endif
+#if CONFIG_RASPI_TOUCHSCREEN
+	#include <raspi/touchscreen.h>
+#endif
 #include <raspi/console.h>
 #include <raspi/time.h>
 #include <uk/print.h>
 #include <uk/arch/types.h>
 
-smcc_psci_callfn_t smcc_psci_call;
-//extern int main(int argc, char *argv[]);
+//smcc_psci_callfn_t smcc_psci_call;
 
-//void _libraspiplat_entry(int argc, char *argv[]) __noreturn;
+static uint64_t assembly_entry;
+static uint64_t hardware_init_done;
 
-static __u64 assembly_entry;
-static __u64 hardware_init_done;
-
-__u64 _libraspiplat_get_reset_time(void) {
+uint64_t _libraspiplat_get_reset_time(void)
+{
 	return assembly_entry;
 }
 
-__u64 _libraspiplat_get_hardware_init_time(void) {
+uint64_t _libraspiplat_get_hardware_init_time(void)
+{
 	return hardware_init_done;
 }
 
-void _libraspiplat_entry(__u64 low0, __u64 hi0, __u64 low1, __u64 hi1)
+void _libraspiplat_entry(uint64_t low0, uint64_t hi0, uint64_t low1, uint64_t hi1)
 {
 	if (hi0 == hi1) {
 		assembly_entry = ((hi0 << 32)&0xFFFFFFFF00000000) | (low0&0xFFFFFFFF);
@@ -68,14 +70,16 @@ void _libraspiplat_entry(__u64 low0, __u64 hi0, __u64 low1, __u64 hi1)
 		assembly_entry = ((hi1 << 32)&0xFFFFFFFF00000000) | (low1&0xFFFFFFFF);
 	}
 
-
-    // Set up serial console and linear frame buffer
     _libraspiplat_init_console();
+
 	#if CONFIG_RASPI_LCD
     	lfb_init();
 	#endif
-	
 
+	#if CONFIG_RASPI_TOUCHSCREEN
+		touchscreen_init();
+	#endif
+	
 	hardware_init_done = get_system_timer();
 
 	/*

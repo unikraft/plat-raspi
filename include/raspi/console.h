@@ -1,8 +1,11 @@
 /* SPDX-License-Identifier: ISC */
 /* Copyright (c) 2015, IBM
- *           (c) 2017, NEC Europe Ltd.
+ *           (c) 2020, NEC Laboratories Europe GmbH, NEC Corporation.
+ *                     All rights reserved.
+ *
  * Author(s): Dan Williams <djwillia@us.ibm.com>
  *            Simon Kuenzer <simon.kuenzer@neclab.eu>
+ *            Santiago Pagani <santiagopagani@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software
  * for any purpose with or without fee is hereby granted, provided

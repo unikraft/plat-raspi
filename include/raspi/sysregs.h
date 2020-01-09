@@ -1,8 +1,35 @@
-#ifndef _SYSREGS_H
-#define _SYSREGS_H
+/*
+ * MIT License
+ *
+ * Copyright (c) 2018, Sergey Matyukevich <https://github.com/s-matyukevich/raspberry-pi-os>
+ *           (c) 2020, Santiago Pagani <santiagopagani@gmail.com>
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy,
+ * modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ */
+
+#ifndef __RASPI_SYSREGS_H__
+#define __RASPI_SYSREGS_H__
 
 #define DEVICE_BASE		(0x3F000000)
-//#define MMIO_BASE		(0xFFFF000000000000 + DEVICE_BASE)
 #define MMIO_BASE		(DEVICE_BASE)
 
 #define GPFSEL0         ((volatile unsigned int*)(MMIO_BASE+0x00200000))
@@ -24,24 +51,13 @@
 #define GPPUDCLK0       ((volatile unsigned int*)(MMIO_BASE+0x00200098))
 #define GPPUDCLK1       ((volatile unsigned int*)(MMIO_BASE+0x0020009C))
 
-
-
-
 // ***************************************
 // SCTLR_EL1, System Control Register (EL1), Page 2654 of AArch64-Reference-Manual.
 // ***************************************
-
-//#define SCTLR_EL1_RESERVED                  (3 << 28) | (3 << 22) | (1 << 20) | (1 << 11)
-//#define SCTLR_EL1_EE_LITTLE_ENDIAN          (0 << 25)
-//#define SCTLR_EL1_EOE_LITTLE_ENDIAN         (0 << 24)
 #define SCTLR_EL1_WFE_NORMAL				(1 << 18)
 #define SCTLR_EL1_WFI_NORMAL				(1 << 16)
-//#define SCTLR_EL1_I_CACHE_DISABLED          (0 << 12)
-//#define SCTLR_EL1_D_CACHE_DISABLED          (0 << 2)
-//#define SCTLR_EL1_MMU_DISABLED              (0 << 0)
 #define SCTLR_EL1_MMU_ENABLED               (1 << 0)
 
-//#define SCTLR_VALUE_MMU_DISABLED	(SCTLR_RESERVED | SCTLR_EE_LITTLE_ENDIAN | SCTLR_I_CACHE_DISABLED | SCTLR_D_CACHE_DISABLED | SCTLR_MMU_DISABLED)
 #define SCTLR_EL1_VALUE_MMU_DISABLED	(SCTLR_EL1_WFE_NORMAL | SCTLR_EL1_WFI_NORMAL)
 #define SCTLR_EL1_VALUE_MMU_ENABLED		(SCTLR_EL1_WFE_NORMAL | SCTLR_EL1_WFI_NORMAL | SCTLR_EL1_MMU_ENABLED)
 #define SCTLR_EL2_VALUE				(0)
@@ -53,7 +69,6 @@
 #define HCR_EL2_RW	    			(1 << 31)
 #define HCR_EL2_IMO	    			(1 << 4)
 #define HCR_EL2_SWIO	    		(1 << 1)
-//#define HCR_EL2_VALUE				(HCR_EL2_RW | HCR_EL2_SWIO)
 #define HCR_EL2_VALUE				(HCR_EL2_RW)
 
 // ***************************************
@@ -83,4 +98,4 @@
 #define SPSR_ELxh			(5 << 0)
 #define SPSR_EL2_VALUE		(SPSR_MASK_ALL | SPSR_ELxh)
 
-#endif
+#endif /* __RASPI_SYSREGS_H__ */
