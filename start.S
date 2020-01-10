@@ -90,8 +90,6 @@ el1_entry:
 	ldr		x0, =(MAIR_VALUE)
 	msr		mair_el1, x0
 
-
-// Jump to C code, should not return
 	ldr		x4, =_libraspiplat_entry
 	ldr		x5, =SCTLR_EL1_VALUE_MMU_ENABLED
 	msr		sctlr_el1, x5

@@ -2,13 +2,8 @@ menuconfig PLAT_RASPI
        bool "Raspberry Pi 3B+"
        default n
        depends on ARCH_ARM_64
-       #select LIBUKDEBUG
-       #select LIBUKALLOC
-       #select LIBUKTIMECONV
-       #select LIBNOLIBC if !HAVE_LIBC
-       #select LIBFDT
        help
-                Create a Unikraft image that runs as a Raspberry Pi 3B+
+          Create a Unikraft image that runs as a Raspberry Pi 3B+
 
 if (PLAT_RASPI)
 
