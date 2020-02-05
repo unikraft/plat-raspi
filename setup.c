@@ -47,7 +47,7 @@
 #include <uk/print.h>
 #include <uk/arch/types.h>
 
-//smcc_psci_callfn_t smcc_psci_call;
+smcc_psci_callfn_t smcc_psci_call;
 
 static uint64_t assembly_entry;
 static uint64_t hardware_init_done;

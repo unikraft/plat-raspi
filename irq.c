@@ -82,9 +82,9 @@ void show_invalid_entry_message(int type)
 	uk_pr_debug("IRQ: %d\n", type);
 }
 
-void show_invalid_entry_message_el1_sync(uint64_t esr_el, uint64_t far_el)
+void show_invalid_entry_message_el1_sync(uint64_t esr_el, uint64_t far_el, uint64_t elr_el1)
 {
-	uk_pr_debug("ESR_EL1: %lx, FAR_EL1: %lx, SCTLR_EL1:%lx\n", esr_el, far_el, get_sctlr_el1());
+  uk_pr_debug("ESR_EL1: %lx, FAR_EL1: %lx, ELR_EL1: %lx, SCTLR_EL1:%lx\n", esr_el, far_el, elr_el1, get_sctlr_el1());
 }
 
 void ukplat_irq_handle(void)

@@ -302,6 +302,7 @@ el1_sync:
 	kernel_entry
 	mrs	x0, ESR_EL1
 	mrs	x1, FAR_EL1
+	mrs	x2, ELR_EL1
 	bl	show_invalid_entry_message_el1_sync
 	b	err_hang
 
