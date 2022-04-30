@@ -39,7 +39,7 @@ int ukplat_memregion_get(int i, struct ukplat_memregion_desc *m)
 	switch (i) {
 	case 0: /* stack */
 		m->base  = (void *) 0;
-		m->len   = (size_t) __TEXT;
+		m->len   = (__sz) __TEXT;
 		m->flags = (UKPLAT_MEMRF_RESERVED
 			    | UKPLAT_MEMRF_READABLE
 			    | UKPLAT_MEMRF_WRITABLE);
@@ -50,7 +50,7 @@ int ukplat_memregion_get(int i, struct ukplat_memregion_desc *m)
 		break;
 	case 1: /* text */
 		m->base  = (void *) __TEXT;
-		m->len   = (size_t) __ETEXT - (size_t) __TEXT;
+		m->len   = (__sz) __ETEXT - (__sz) __TEXT;
 		m->flags = (UKPLAT_MEMRF_RESERVED
 			    | UKPLAT_MEMRF_READABLE);
 #if CONFIG_UKPLAT_MEMRNAME
@@ -60,7 +60,7 @@ int ukplat_memregion_get(int i, struct ukplat_memregion_desc *m)
 		break;
 	case 2: /* rodata */
 		m->base  = (void *) __RODATA;
-		m->len   = (size_t) __ERODATA - (size_t) __RODATA;
+		m->len   = (__sz) __ERODATA - (__sz) __RODATA;
 		m->flags = (UKPLAT_MEMRF_RESERVED
 			    | UKPLAT_MEMRF_READABLE);
 #if CONFIG_UKPLAT_MEMRNAME
@@ -70,7 +70,7 @@ int ukplat_memregion_get(int i, struct ukplat_memregion_desc *m)
 		break;
 	case 3: /* ctors */
 		m->base  = (void *) __CTORS;
-		m->len   = (size_t) __ECTORS - (size_t) __CTORS;
+		m->len   = (__sz) __ECTORS - (__sz) __CTORS;
 		m->flags = (UKPLAT_MEMRF_RESERVED
 			    | UKPLAT_MEMRF_READABLE);
 #if CONFIG_UKPLAT_MEMRNAME
@@ -80,7 +80,7 @@ int ukplat_memregion_get(int i, struct ukplat_memregion_desc *m)
 		break;
 	case 4: /* data */
 		m->base  = (void *) __DATA;
-		m->len   = (size_t) __EDATA - (size_t) __DATA;
+		m->len   = (__sz) __EDATA - (__sz) __DATA;
 		m->flags = (UKPLAT_MEMRF_RESERVED
 			    | UKPLAT_MEMRF_READABLE
 			    | UKPLAT_MEMRF_WRITABLE);
@@ -91,7 +91,7 @@ int ukplat_memregion_get(int i, struct ukplat_memregion_desc *m)
 		break;
 	case 5: /* bss */
 		m->base  = (void *) __BSS_START;
-		m->len   = (size_t) __END - (size_t) __BSS_START;
+		m->len   = (__sz) __END - (__sz) __BSS_START;
 		m->flags = (UKPLAT_MEMRF_RESERVED
 			    | UKPLAT_MEMRF_READABLE
 			    | UKPLAT_MEMRF_WRITABLE);
@@ -102,7 +102,7 @@ int ukplat_memregion_get(int i, struct ukplat_memregion_desc *m)
 		break;
 	case 6: /* heap */
 		m->base  = (void *) __END;
-		m->len   = (size_t) (MMIO_BASE/2 - 1) - (size_t) __END;
+		m->len   = (__sz) (MMIO_BASE/2 - 1) - (__sz) __END;
 		m->flags = UKPLAT_MEMRF_ALLOCATABLE;
 #if CONFIG_UKPLAT_MEMRNAME
 		m->name  = "heap";
